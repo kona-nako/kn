@@ -1,59 +1,31 @@
 import streamlit as st
+import random
 
-st.title("🏰 選択RPG")
+st.title("📚 英単語クイズ")
 
-# 初回のみシーンを設定
-if "scene" not in st.session_state:
-    st.session_state.scene = "start"
+questions = [
+    {"english": "apple", "japanese": "りんご"},
+    {"english": "dog", "japanese": "犬"},
+    {"english": "book", "japanese": "本"},
+]
 
-# スタートシーン
-if st.session_state.scene == "start":
-    st.write("あなたは森の入り口にいます。")
+# 初回のみ問題を選ぶ
+if "question" not in st.session_state:
+    st.session_state.question = random.choice(questions)
 
-    if st.button("森へ進む"):
-        st.session_state.scene = "forest"
-        st.rerun()
+q = st.session_state.question
 
-    if st.button("村へ行く"):
-        st.session_state.scene = "village"
-        st.rerun()
+st.write(f"次の英単語の意味は？")
+st.header(q["english"])
 
-# 森
-elif st.session_state.scene == "forest":
-    st.write("🌲 森の奥でモンスターに出会った！")
+answer = st.text_input("答えを入力")
 
-    if st.button("戦う"):
-        st.session_state.scene = "battle"
-        st.rerun()
+if st.button("答え合わせ"):
+    if answer == q["japanese"]:
+        st.success("正解！🎉")
+    else:
+        st.error(f"不正解。正解は「{q['japanese']}」です。")
 
-    if st.button("逃げる"):
-        st.session_state.scene = "start"
-        st.rerun()
-
-# 村
-elif st.session_state.scene == "village":
-    st.write("🏠 村人が話しかけてきた。")
-
-    if st.button("話を聞く"):
-        st.write("『森に宝があるらしいぞ！』")
-
-    if st.button("森へ向かう"):
-        st.session_state.scene = "forest"
-        st.rerun()
-
-# 戦闘
-elif st.session_state.scene == "battle":
-    st.write("⚔️ モンスターを倒した！")
-
-    if st.button("宝箱を開ける"):
-        st.session_state.scene = "treasure"
-        st.rerun()
-
-# 宝箱
-elif st.session_state.scene == "treasure":
-    st.success("🎉 伝説の剣を手に入れた！")
-    st.write("ゲームクリア！")
-
-    if st.button("最初から"):
-        st.session_state.scene = "start"
-        st.rerun()
+if st.button("次の問題"):
+    st.session_state.question = random.choice(questions)
+    st.rerun()
