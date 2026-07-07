@@ -1,109 +1,285 @@
 import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
+import random
 
-st.set_page_config(page_title="ケアレスミス分析", page_icon="📊")
 
-st.title("📊 ケアレスミス分析アプリ")
+# =========================
+# 基本設定
+# =========================
 
-st.write("問題を解いた結果を入力すると、ケアレスミス率を分析します。")
+st.set_page_config(
+    page_title="Study Escape",
+    page_icon="🗝️",
+    layout="centered"
+)
 
-# セッションにデータ保存
-if "data" not in st.session_state:
-    st.session_state.data = pd.DataFrame(columns=[
-        "問題",
-        "正誤",
-        "ミス種類"
-    ])
 
-# 入力フォーム
-with st.form("input_form"):
-    problem = st.text_input("問題名")
-    result = st.selectbox("結果", ["正解", "不正解"])
+# =========================
+# 問題データ
+# =========================
 
-    mistake = st.selectbox(
-        "ミスの種類",
-        [
-            "なし",
-            "ケアレスミス",
-            "計算ミス",
-            "知識不足",
-            "時間不足",
-            "問題文の読み間違い"
-        ]
+stages = {
+
+    "🏫 学校": [
+        {
+            "question": "5×8はいくつ？",
+            "answer": "40",
+            "hint": "九九を使います"
+        },
+        {
+            "question": "『走る』の英単語は？",
+            "answer": "run",
+            "hint": "Rから始まります"
+        },
+        {
+            "question": "日本の首都は？",
+            "answer": "東京",
+            "hint": "人口が最も多い都市です"
+        }
+    ],
+
+
+    "🏰 古城": [
+        {
+            "question": "x+5=10 のxはいくつ？",
+            "answer": "5",
+            "hint": "5を移項します"
+        },
+        {
+            "question": "太陽系で地球の隣の惑星は？",
+            "answer": "火星",
+            "hint": "赤い惑星です"
+        },
+        {
+            "question": "英語で猫は？",
+            "answer": "cat",
+            "hint": "Cから始まります"
+        }
+    ],
+
+
+    "🚀 宇宙船": [
+        {
+            "question": "水の化学式は？",
+            "answer": "H2O",
+            "hint": "水素と酸素からできます"
+        },
+        {
+            "question": "江戸幕府を開いた人物は？",
+            "answer": "徳川家康",
+            "hint": "1603年に幕府を開きました"
+        },
+        {
+            "question": "9×9はいくつ？",
+            "answer": "81",
+            "hint": "九九の最後です"
+        }
+    ]
+
+}
+
+
+# =========================
+# セッション管理
+# =========================
+
+if "stage_index" not in st.session_state:
+    st.session_state.stage_index = 0
+
+if "question_index" not in st.session_state:
+    st.session_state.question_index = 0
+
+if "score" not in st.session_state:
+    st.session_state.score = 0
+
+if "started" not in st.session_state:
+    st.session_state.started = False
+
+
+
+stage_names = list(stages.keys())
+
+
+# =========================
+# タイトル
+# =========================
+
+st.title("🗝️ Study Escape")
+st.subheader("知識で扉を開ける学習脱出ゲーム")
+
+
+# =========================
+# スタート画面
+# =========================
+
+if not st.session_state.started:
+
+    st.write(
+        """
+        あなたは謎の施設に閉じ込められた。
+
+        脱出するには、
+        各部屋に隠された知識の試練を突破しなければならない。
+
+        正しい答えを導き、出口を目指そう。
+        """
     )
 
-    submit = st.form_submit_button("追加")
 
-if submit:
-    new = pd.DataFrame({
-        "問題":[problem],
-        "正誤":[result],
-        "ミス種類":[mistake]
-    })
+    if st.button("冒険開始"):
 
-    st.session_state.data = pd.concat(
-        [st.session_state.data, new],
-        ignore_index=True
-    )
+        st.session_state.started = True
+        st.rerun()
 
-df = st.session_state.data
 
-st.subheader("入力データ")
 
-st.dataframe(df, use_container_width=True)
+# =========================
+# ゲーム画面
+# =========================
 
-if len(df) > 0:
+else:
 
-    total = len(df)
 
-    careless = len(df[df["ミス種類"]=="ケアレスミス"])
+    # 全クリア判定
 
-    rate = careless / total * 100
+    if st.session_state.stage_index >= len(stage_names):
 
-    st.metric("ケアレスミス率", f"{rate:.1f}%")
+        st.success("🎉 脱出成功！")
 
-    st.metric("問題数", total)
+        st.write(
+            f"""
+            おめでとうございます。
 
-    st.metric("ケアレスミス", careless)
+            あなたの結果：
 
-    # 円グラフ
-    st.subheader("ケアレスミス割合")
+            正解数：
+            {st.session_state.score} 問
 
-    fig, ax = plt.subplots()
+            知識の迷宮から脱出しました！
+            """
+        )
 
-    ax.pie(
-        [careless, total-careless],
-        labels=["ケアレスミス","その他"],
-        autopct="%1.1f%%",
-        startangle=90
-    )
+        if st.button("もう一度挑戦"):
 
-    ax.axis("equal")
+            st.session_state.clear()
+            st.rerun()
 
-    st.pyplot(fig)
-
-    # 棒グラフ
-    st.subheader("ミスの種類")
-
-    count = df["ミス種類"].value_counts()
-
-    fig2, ax2 = plt.subplots()
-
-    ax2.bar(count.index, count.values)
-
-    plt.xticks(rotation=30)
-
-    st.pyplot(fig2)
-
-    # コメント
-    st.subheader("AIコメント（簡易版）")
-
-    if rate < 10:
-        st.success("ケアレスミスは少ないです。この調子で続けましょう！")
-
-    elif rate < 30:
-        st.warning("少しケアレスミスがあります。見直しを意識すると得点アップが期待できます。")
 
     else:
-        st.error("ケアレスミスが多めです。見直し時間を確保し、問題文を丁寧に読む習慣をつけましょう。")
+
+
+        current_stage = stage_names[
+            st.session_state.stage_index
+        ]
+
+
+        questions = stages[current_stage]
+
+
+        current_question = questions[
+            st.session_state.question_index
+        ]
+
+
+        # ステージ表示
+
+        st.header(current_stage)
+
+
+        st.progress(
+            (st.session_state.question_index)
+            /
+            len(questions)
+        )
+
+
+        st.write(
+            "出口を開くために問題を解こう"
+        )
+
+
+        # 問題
+
+        st.subheader(
+            current_question["question"]
+        )
+
+
+        answer = st.text_input(
+            "答えを入力してください"
+        )
+
+
+        # ヒント
+
+        if st.button("💡 ヒント"):
+
+            st.info(
+                current_question["hint"]
+            )
+
+
+
+        # 回答
+
+        if st.button("🔓 回答する"):
+
+
+            if answer.strip().lower() == \
+               current_question["answer"].lower():
+
+
+                st.success(
+                    "正解！扉が開いた！"
+                )
+
+
+                st.session_state.score += 1
+
+
+                st.session_state.question_index += 1
+
+
+                # ステージ終了
+
+                if (
+                    st.session_state.question_index
+                    >= len(questions)
+                ):
+
+                    st.session_state.stage_index += 1
+                    st.session_state.question_index = 0
+
+
+                st.rerun()
+
+
+            else:
+
+
+                st.error(
+                    "不正解。もう一度考えてみよう。"
+                )
+
+
+# =========================
+# 学習状況
+# =========================
+
+if st.session_state.started:
+
+    st.sidebar.title("📊 学習記録")
+
+    st.sidebar.write(
+        f"正解数：{st.session_state.score}"
+    )
+
+
+    if st.session_state.stage_index < len(stage_names):
+
+        st.sidebar.write(
+            "現在："
+            +
+            stage_names[
+                st.session_state.stage_index
+            ]
+        )
