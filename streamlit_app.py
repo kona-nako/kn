@@ -1,62 +1,75 @@
 import streamlit as st
 import time
-import random
+from PIL import Image
 
 
-# =========================
-# 設定
-# =========================
+# ==========================
+# 基本設定
+# ==========================
 
 st.set_page_config(
     page_title="Typing Battle",
-    page_icon="⚔️"
+    page_icon="⚔️",
+    layout="wide"
 )
 
 
-# =========================
+# ==========================
 # 敵データ
-# =========================
+# ==========================
 
 enemies = [
+
     {
         "name": "スライム",
         "hp": 100,
         "time": 30,
-        "text": "apple"
+        "text": "apple",
+        "image": "images/slime.png"
     },
+
 
     {
         "name": "ゴブリン",
         "hp": 300,
         "time": 25,
-        "text": "python programming"
+        "text": "python programming",
+        "image": "images/goblin.png"
     },
+
 
     {
         "name": "ゴーレム",
         "hp": 700,
         "time": 20,
-        "text": "knowledge is power"
+        "text": "knowledge is power",
+        "image": "images/golem.png"
     },
+
 
     {
         "name": "ドラゴン",
         "hp": 1500,
         "time": 15,
-        "text": "continuous practice improves typing skill"
+        "text": "continuous practice improves typing skill",
+        "image": "images/dragon.png"
     }
+
 ]
 
 
-# =========================
-# 初期化
-# =========================
+# ==========================
+# 状態保存
+# ==========================
 
-if "enemy_level" not in st.session_state:
-    st.session_state.enemy_level = 0
+if "enemy_index" not in st.session_state:
+    st.session_state.enemy_index = 0
 
 if "enemy_hp" not in st.session_state:
     st.session_state.enemy_hp = enemies[0]["hp"]
+
+if "playing" not in st.session_state:
+    st.session_state.playing = False
 
 if "start_time" not in st.session_state:
     st.session_state.start_time = None
@@ -67,38 +80,92 @@ if "combo" not in st.session_state:
 if "score" not in st.session_state:
     st.session_state.score = 0
 
-if "playing" not in st.session_state:
-    st.session_state.playing = False
+if "wins" not in st.session_state:
+    st.session_state.wins = 0
 
 
 
-# =========================
+# ==========================
+# HPバー
+# ==========================
+
+def hp_bar(current, maximum):
+
+    percent = int(
+        current / maximum * 100
+    )
+
+    st.markdown(
+        f"""
+        <div style="
+        background:#333;
+        border-radius:10px;
+        height:30px;
+        width:100%;
+        ">
+
+        <div style="
+        background:#e53935;
+        width:{percent}%;
+        height:30px;
+        border-radius:10px;
+        text-align:center;
+        color:white;
+        font-weight:bold;
+        ">
+
+        {current}/{maximum}
+
+        </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+
+# ==========================
 # タイトル
-# =========================
+# ==========================
 
 st.title("⚔️ Typing Battle")
 
 st.write(
-    "正確なタイピングで敵を倒せ！"
+"""
+⌨️ タイピングで敵を攻撃しよう！
+
+正確に入力するほど攻撃力アップ。
+ミスすると時間を失います。
+"""
 )
 
 
-# =========================
-# クリア判定
-# =========================
 
-if st.session_state.enemy_level >= len(enemies):
+# ==========================
+# クリア
+# ==========================
+
+if st.session_state.enemy_index >= len(enemies):
+
+    st.balloons()
 
     st.success(
-        "🎉 全ての敵を倒しました！"
+        "🏆 全モンスター撃破！"
     )
 
     st.write(
-        f"総スコア：{st.session_state.score}"
+        f"""
+        最終スコア：
+        {st.session_state.score}
+
+        撃破数：
+        {st.session_state.wins}
+        """
     )
 
 
-    if st.button("最初から"):
+    if st.button("もう一度遊ぶ"):
 
         st.session_state.clear()
         st.rerun()
@@ -109,51 +176,95 @@ else:
 
 
     enemy = enemies[
-        st.session_state.enemy_level
+        st.session_state.enemy_index
     ]
 
 
-    # =====================
-    # 敵表示
-    # =====================
+    # ==========================
+    # 戦闘画面
+    # ==========================
 
-    st.header(
-        f"👹 {enemy['name']}"
-    )
+    left, right = st.columns(2)
 
 
-    st.progress(
-        st.session_state.enemy_hp
-        /
-        enemy["hp"]
-    )
+    with left:
+
+        st.subheader(
+            enemy["name"]
+        )
 
 
-    st.write(
-        f"敵HP：{st.session_state.enemy_hp}"
-    )
+        try:
+
+            image = Image.open(
+                enemy["image"]
+            )
+
+            st.image(
+                image,
+                width=250
+            )
+
+        except:
+
+            st.warning(
+                "画像がありません"
+            )
 
 
-    # =====================
-    # 開始
-    # =====================
+        hp_bar(
+            st.session_state.enemy_hp,
+            enemy["hp"]
+        )
+
+
+
+    with right:
+
+
+        st.subheader(
+            "🧙 プレイヤー"
+        )
+
+
+        st.write(
+            "⚔️ 攻撃力：正確性で変化"
+        )
+
+        st.write(
+            f"🔥 コンボ：{st.session_state.combo}"
+        )
+
+        st.write(
+            f"🏆 スコア：{st.session_state.score}"
+        )
+
+
+
+    st.divider()
+
+
+
+    # ==========================
+    # 戦闘開始
+    # ==========================
 
     if not st.session_state.playing:
 
 
-        st.write(
+        st.info(
             f"""
             制限時間：
             {enemy['time']}秒
 
-            攻撃文：
+            攻撃ワード：
 
-            **{enemy['text']}**
+            {enemy['text']}
             """
         )
 
 
-        if st.button("戦闘開始"):
+        if st.button("⚔️ 戦闘開始"):
 
             st.session_state.start_time = time.time()
 
@@ -165,10 +276,6 @@ else:
 
     else:
 
-
-        # =====================
-        # 時間計算
-        # =====================
 
         elapsed = (
             time.time()
@@ -185,7 +292,7 @@ else:
 
 
         st.metric(
-            "残り時間",
+            "⏳ 残り時間",
             f"{remaining}秒"
         )
 
@@ -194,40 +301,40 @@ else:
 
 
             st.error(
-                "時間切れ！敗北..."
+                "💀 時間切れ！敗北"
             )
 
 
             if st.button("再挑戦"):
 
                 st.session_state.playing = False
+                st.session_state.combo = 0
                 st.rerun()
+
 
 
         else:
 
 
-            # =================
-            # 入力
-            # =================
-
-            answer = st.text_input(
+            st.subheader(
                 "攻撃入力"
             )
 
 
-            if st.button("⚔️ 攻撃"):
+            answer = st.text_input(
+                "ここに入力"
+            )
+
+
+            if st.button("🔥 攻撃"):
 
 
                 target = enemy["text"]
 
 
-                # -----------------
                 # 正確率計算
-                # -----------------
 
                 correct = 0
-
 
                 for a,b in zip(
                     answer,
@@ -235,19 +342,17 @@ else:
                 ):
 
                     if a == b:
+
                         correct += 1
 
 
                 accuracy = (
-                    correct
-                    /
+                    correct /
                     len(target)
                 )
 
 
-                # -----------------
-                # ダメージ計算
-                # -----------------
+                # 攻撃計算
 
                 if answer == target:
 
@@ -255,68 +360,56 @@ else:
                     st.session_state.combo += 1
 
 
-                    damage = int(
-                        100
-                        *
-                        accuracy
-                        *
-                        (
-                            1
-                            +
-                            st.session_state.combo
-                            *
-                            0.2
-                        )
-                    )
-
-
-                    st.success(
-                        f"""
-                        PERFECT!
-
-                        攻撃力：
-                        {damage}
-
-                        コンボ：
-                        {st.session_state.combo}
-                        """
-                    )
-
-
                 else:
-
-
-                    damage = int(
-                        50
-                        *
-                        accuracy
-                    )
 
 
                     st.session_state.combo = 0
 
 
-                    st.warning(
-                        """
-                        ミス！
 
-                        時間 -3秒
-                        """
-                    )
+                combo_bonus = (
+                    1 +
+                    st.session_state.combo
+                    *
+                    0.2
+                )
 
+
+                damage = int(
+                    100 *
+                    accuracy *
+                    combo_bonus
+                )
+
+
+                if answer != target:
 
                     enemy["time"] -= 3
 
 
+                    st.warning(
+                        "ミス！時間減少"
+                    )
 
-                # HP減少
+                else:
+
+                    st.success(
+                        f"""
+                        ⚔️ 攻撃成功！
+
+                        ダメージ：
+                        {damage}
+                        """
+                    )
+
 
                 st.session_state.enemy_hp -= damage
 
                 st.session_state.score += damage
 
 
-                # 敵撃破
+
+                # 撃破
 
                 if st.session_state.enemy_hp <= 0:
 
@@ -325,23 +418,24 @@ else:
 
 
                     st.success(
-                        f"{enemy['name']}を倒した！"
+                        f"{enemy['name']}撃破！"
                     )
 
 
-                    st.session_state.enemy_level += 1
+                    st.session_state.enemy_index += 1
+
+                    st.session_state.wins += 1
 
 
                     if (
-                        st.session_state.enemy_level
+                        st.session_state.enemy_index
                         <
                         len(enemies)
                     ):
 
                         next_enemy = enemies[
-                            st.session_state.enemy_level
+                            st.session_state.enemy_index
                         ]
-
 
                         st.session_state.enemy_hp = (
                             next_enemy["hp"]
@@ -349,7 +443,6 @@ else:
 
 
                     st.session_state.playing = False
-
 
 
                 st.rerun()
