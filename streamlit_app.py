@@ -1,448 +1,130 @@
 import streamlit as st
 import time
-from PIL import Image
-
+import random
 
 # ==========================
-# 基本設定
+# 初期設定
 # ==========================
-
 st.set_page_config(
-    page_title="Typing Battle",
-    page_icon="⚔️",
+    page_title="高速学習アプリ",
     layout="wide"
 )
 
+LIMIT = 10  # 制限時間（秒）
 
 # ==========================
-# 敵データ
+# 問題データ
 # ==========================
-
-enemies = [
-
+QUESTIONS = [
     {
-        "name": "スライム",
-        "hp": 100,
-        "time": 30,
-        "text": "apple",
-        "image": "images/slime.png"
+        "question": "日本の首都は？",
+        "choices": ["大阪", "東京", "福岡", "札幌"],
+        "answer": "東京"
     },
-
-
     {
-        "name": "ゴブリン",
-        "hp": 300,
-        "time": 25,
-        "text": "python programming",
-        "image": "images/goblin.png"
+        "question": "5 × 8 = ?",
+        "choices": ["30", "35", "40", "45"],
+        "answer": "40"
     },
-
-
     {
-        "name": "ゴーレム",
-        "hp": 700,
-        "time": 20,
-        "text": "knowledge is power",
-        "image": "images/golem.png"
+        "question": "水の化学式は？",
+        "choices": ["CO2", "H2O", "O2", "NaCl"],
+        "answer": "H2O"
     },
-
-
     {
-        "name": "ドラゴン",
-        "hp": 1500,
-        "time": 15,
-        "text": "continuous practice improves typing skill",
-        "image": "images/dragon.png"
-    }
-
+        "question": "英語で『犬』は？",
+        "choices": ["Cat", "Bird", "Dog", "Fish"],
+        "answer": "Dog"
+    },
+    {
+        "question": "100 ÷ 4 = ?",
+        "choices": ["20", "25", "30", "40"],
+        "answer": "25"
+    },
 ]
 
-
 # ==========================
-# 状態保存
+# session_state
 # ==========================
-
-if "enemy_index" not in st.session_state:
-    st.session_state.enemy_index = 0
-
-if "enemy_hp" not in st.session_state:
-    st.session_state.enemy_hp = enemies[0]["hp"]
-
-if "playing" not in st.session_state:
-    st.session_state.playing = False
-
-if "start_time" not in st.session_state:
-    st.session_state.start_time = None
-
-if "combo" not in st.session_state:
-    st.session_state.combo = 0
-
 if "score" not in st.session_state:
     st.session_state.score = 0
 
-if "wins" not in st.session_state:
-    st.session_state.wins = 0
+if "wrong" not in st.session_state:
+    st.session_state.wrong = 0
 
+if "question" not in st.session_state:
+    st.session_state.question = random.choice(QUESTIONS)
 
+if "start_time" not in st.session_state:
+    st.session_state.start_time = time.time()
+
+if "answered" not in st.session_state:
+    st.session_state.answered = False
 
 # ==========================
-# HPバー
+# 新しい問題
 # ==========================
+def next_question():
+    st.session_state.question = random.choice(QUESTIONS)
+    st.session_state.start_time = time.time()
+    st.session_state.answered = False
+    st.rerun()
 
-def hp_bar(current, maximum):
+# ==========================
+# 残り時間
+# ==========================
+elapsed = time.time() - st.session_state.start_time
+remain = max(0, LIMIT - elapsed)
 
-    percent = int(
-        current / maximum * 100
-    )
-
-    st.markdown(
-        f"""
-        <div style="
-        background:#333;
-        border-radius:10px;
-        height:30px;
-        width:100%;
-        ">
-
-        <div style="
-        background:#e53935;
-        width:{percent}%;
-        height:30px;
-        border-radius:10px;
-        text-align:center;
-        color:white;
-        font-weight:bold;
-        ">
-
-        {current}/{maximum}
-
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
+# 時間切れ
+if remain <= 0:
+    st.session_state.wrong += 1
+    next_question()
 
 # ==========================
 # タイトル
 # ==========================
+st.title("🍣 回転ずし式 学力トレーニング")
 
-st.title("⚔️ Typing Battle")
+col1, col2 = st.columns([3,1])
 
-st.write(
-"""
-⌨️ タイピングで敵を攻撃しよう！
+with col2:
+    st.metric("残り時間", f"{remain:.1f} 秒")
+    st.metric("正解", st.session_state.score)
+    st.metric("不正解", st.session_state.wrong)
 
-正確に入力するほど攻撃力アップ。
-ミスすると時間を失います。
-"""
-)
+with col1:
 
+    q = st.session_state.question
 
+    st.subheader(q["question"])
 
-# ==========================
-# クリア
-# ==========================
-
-if st.session_state.enemy_index >= len(enemies):
-
-    st.balloons()
-
-    st.success(
-        "🏆 全モンスター撃破！"
+    answer = st.radio(
+        "答えを選んでください",
+        q["choices"],
+        key="radio"
     )
 
-    st.write(
-        f"""
-        最終スコア：
-        {st.session_state.score}
-
-        撃破数：
-        {st.session_state.wins}
-        """
-    )
-
-
-    if st.button("もう一度遊ぶ"):
-
-        st.session_state.clear()
-        st.rerun()
-
-
-
-else:
-
-
-    enemy = enemies[
-        st.session_state.enemy_index
-    ]
-
-
-    # ==========================
-    # 戦闘画面
-    # ==========================
-
-    left, right = st.columns(2)
-
-
-    with left:
-
-        st.subheader(
-            enemy["name"]
-        )
-
-
-        try:
-
-            image = Image.open(
-                enemy["image"]
-            )
-
-            st.image(
-                image,
-                width=250
-            )
-
-        except:
-
-            st.warning(
-                "画像がありません"
-            )
-
-
-        hp_bar(
-            st.session_state.enemy_hp,
-            enemy["hp"]
-        )
-
-
-
-    with right:
-
-
-        st.subheader(
-            "🧙 プレイヤー"
-        )
-
-
-        st.write(
-            "⚔️ 攻撃力：正確性で変化"
-        )
-
-        st.write(
-            f"🔥 コンボ：{st.session_state.combo}"
-        )
-
-        st.write(
-            f"🏆 スコア：{st.session_state.score}"
-        )
-
-
-
-    st.divider()
-
-
-
-    # ==========================
-    # 戦闘開始
-    # ==========================
-
-    if not st.session_state.playing:
-
-
-        st.info(
-            f"""
-            制限時間：
-            {enemy['time']}秒
-
-            攻撃ワード：
-
-            {enemy['text']}
-            """
-        )
-
-
-        if st.button("⚔️ 戦闘開始"):
-
-            st.session_state.start_time = time.time()
-
-            st.session_state.playing = True
-
-            st.rerun()
-
-
-
-    else:
-
-
-        elapsed = (
-            time.time()
-            -
-            st.session_state.start_time
-        )
-
-
-        remaining = (
-            enemy["time"]
-            -
-            int(elapsed)
-        )
-
-
-        st.metric(
-            "⏳ 残り時間",
-            f"{remaining}秒"
-        )
-
-
-        if remaining <= 0:
-
-
-            st.error(
-                "💀 時間切れ！敗北"
-            )
-
-
-            if st.button("再挑戦"):
-
-                st.session_state.playing = False
-                st.session_state.combo = 0
-                st.rerun()
-
-
-
+    if st.button("回答する"):
+
+        if answer == q["answer"]:
+            st.success("正解！")
+            st.session_state.score += 1
         else:
+            st.error(f"不正解（正解：{q['answer']}）")
+            st.session_state.wrong += 1
 
+        time.sleep(0.8)
+        next_question()
 
-            st.subheader(
-                "攻撃入力"
-            )
+# ==========================
+# プログレスバー
+# ==========================
+progress = remain / LIMIT
+st.progress(progress)
 
-
-            answer = st.text_input(
-                "ここに入力"
-            )
-
-
-            if st.button("🔥 攻撃"):
-
-
-                target = enemy["text"]
-
-
-                # 正確率計算
-
-                correct = 0
-
-                for a,b in zip(
-                    answer,
-                    target
-                ):
-
-                    if a == b:
-
-                        correct += 1
-
-
-                accuracy = (
-                    correct /
-                    len(target)
-                )
-
-
-                # 攻撃計算
-
-                if answer == target:
-
-
-                    st.session_state.combo += 1
-
-
-                else:
-
-
-                    st.session_state.combo = 0
-
-
-
-                combo_bonus = (
-                    1 +
-                    st.session_state.combo
-                    *
-                    0.2
-                )
-
-
-                damage = int(
-                    100 *
-                    accuracy *
-                    combo_bonus
-                )
-
-
-                if answer != target:
-
-                    enemy["time"] -= 3
-
-
-                    st.warning(
-                        "ミス！時間減少"
-                    )
-
-                else:
-
-                    st.success(
-                        f"""
-                        ⚔️ 攻撃成功！
-
-                        ダメージ：
-                        {damage}
-                        """
-                    )
-
-
-                st.session_state.enemy_hp -= damage
-
-                st.session_state.score += damage
-
-
-
-                # 撃破
-
-                if st.session_state.enemy_hp <= 0:
-
-
-                    st.balloons()
-
-
-                    st.success(
-                        f"{enemy['name']}撃破！"
-                    )
-
-
-                    st.session_state.enemy_index += 1
-
-                    st.session_state.wins += 1
-
-
-                    if (
-                        st.session_state.enemy_index
-                        <
-                        len(enemies)
-                    ):
-
-                        next_enemy = enemies[
-                            st.session_state.enemy_index
-                        ]
-
-                        st.session_state.enemy_hp = (
-                            next_enemy["hp"]
-                        )
-
-
-                    st.session_state.playing = False
-
-
-                st.rerun()
+# ==========================
+# 自動更新
+# ==========================
+time.sleep(0.2)
+st.rerun()
