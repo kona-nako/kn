@@ -4,12 +4,9 @@ import random
 
 st.set_page_config(page_title="高速学習アプリ", layout="wide")
 
-GAME_LIMIT = 30      # ゲーム全体（秒）
-QUESTION_LIMIT = 5   # 1問（秒）
+GAME_LIMIT = 30
+QUESTION_LIMIT = 5
 
-# -------------------------
-# 問題
-# -------------------------
 QUESTIONS = [
     {
         "question": "日本の首都は？",
@@ -41,11 +38,8 @@ QUESTIONS = [
 # -------------------------
 # 初期化
 # -------------------------
-if "game_start" not in st.session_state:
-    st.session_state.game_start = time.time()
-
-if "question_start" not in st.session_state:
-    st.session_state.question_start = time.time()
+if "started" not in st.session_state:
+    st.session_state.started = False
 
 if "score" not in st.session_state:
     st.session_state.score = 0
@@ -56,9 +50,36 @@ if "wrong" not in st.session_state:
 if "question" not in st.session_state:
     st.session_state.question = random.choice(QUESTIONS)
 
-if "radio_index" not in st.session_state:
-    st.session_state.radio_index = 0
+if "radio_id" not in st.session_state:
+    st.session_state.radio_id = 0
 
+# -------------------------
+# スタート前画面
+# -------------------------
+if not st.session_state.started:
+
+    st.title("🍣 高速学習アプリ")
+
+    st.markdown("## 制限時間：30秒")
+    st.markdown("### 1問5秒以内に答えよう！")
+
+    if st.button("▶ スタート！", use_container_width=True):
+
+        st.session_state.started = True
+        st.session_state.game_start = time.time()
+        st.session_state.question_start = time.time()
+        st.rerun()
+
+    st.stop()
+
+# -------------------------
+# タイマー
+# -------------------------
+game_elapsed = time.time() - st.session_state.game_start
+question_elapsed = time.time() - st.session_state.question_start
+
+game_remaining = max(0, GAME_LIMIT - int(game_elapsed))
+question_remaining = max(0, QUESTION_LIMIT - int(question_elapsed))
 
 # -------------------------
 # 次の問題
@@ -66,23 +87,13 @@ if "radio_index" not in st.session_state:
 def next_question():
     st.session_state.question = random.choice(QUESTIONS)
     st.session_state.question_start = time.time()
-    st.session_state.radio_index += 1
+    st.session_state.radio_id += 1
     st.rerun()
-
-
-# -------------------------
-# タイマー計算
-# -------------------------
-game_elapsed = time.time() - st.session_state.game_start
-question_elapsed = time.time() - st.session_state.question_start
-
-game_remaining = max(0, GAME_LIMIT - game_elapsed)
-question_remaining = max(0, QUESTION_LIMIT - question_elapsed)
 
 # -------------------------
 # ゲーム終了
 # -------------------------
-if game_remaining <= 0:
+if game_elapsed >= GAME_LIMIT:
 
     st.title("🎉 ゲーム終了")
 
@@ -91,61 +102,73 @@ if game_remaining <= 0:
 
     if st.button("もう一度遊ぶ"):
 
-        for k in list(st.session_state.keys()):
-            del st.session_state[k]
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
 
         st.rerun()
 
     st.stop()
 
 # -------------------------
-# 問題タイムアウト
+# 問題時間終了
 # -------------------------
-if question_remaining <= 0:
+if question_elapsed >= QUESTION_LIMIT:
     st.session_state.wrong += 1
     next_question()
 
 # -------------------------
-# 画面
+# 上部タイマー
 # -------------------------
-st.title("高速学習アプリ")
+st.title("🍣 高速学習アプリ")
 
-col1, col2 = st.columns([3,1])
+# ゲームタイマー
+st.metric("⏰ ゲーム残り時間", f"{game_remaining} 秒")
+st.progress(game_remaining / GAME_LIMIT)
 
-with col2:
+# 少し余白
+st.write("")
 
-    st.metric("ゲーム残り", f"{game_remaining:.1f} 秒")
-    st.progress(game_remaining / GAME_LIMIT)
+# 問題タイマー
+st.metric("⌛ この問題の残り時間", f"{question_remaining} 秒")
+st.progress(question_remaining / QUESTION_LIMIT)
 
-    st.metric("問題残り", f"{question_remaining:.1f} 秒")
-    st.progress(question_remaining / QUESTION_LIMIT)
+st.write("")
 
-    st.metric("正解", st.session_state.score)
-    st.metric("不正解", st.session_state.wrong)
+# 正解・不正解
+col1, col2 = st.columns(2)
 
 with col1:
+    st.metric("⭕ 正解", st.session_state.score)
 
-    q = st.session_state.question
+with col2:
+    st.metric("❌ 不正解", st.session_state.wrong)
 
-    st.subheader(q["question"])
+st.divider()
 
-    answer = st.radio(
-        "選択してください",
-        q["choices"],
-        key=f"radio_{st.session_state.radio_index}"
-    )
+# -------------------------
+# 問題表示
+# -------------------------
+q = st.session_state.question
 
-    if st.button("回答"):
+st.subheader(q["question"])
 
-        if answer == q["answer"]:
-            st.session_state.score += 1
-            st.success("正解！")
-        else:
-            st.session_state.wrong += 1
-            st.error(f"不正解！（正解：{q['answer']}）")
+answer = st.radio(
+    "答えを選んでください",
+    q["choices"],
+    key=f"radio_{st.session_state.radio_id}"
+)
 
-        time.sleep(0.5)
-        next_question()
+if st.button("回答", use_container_width=True):
+
+    if answer == q["answer"]:
+        st.session_state.score += 1
+        st.success("正解！")
+    else:
+        st.session_state.wrong += 1
+        st.error(f"不正解！（正解：{q['answer']}）")
+
+    time.sleep(0.5)
+    next_question()
 
 # -------------------------
 # 自動更新
