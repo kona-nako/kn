@@ -233,19 +233,19 @@ if not st.session_state.started:
 
     with btn_col1:
         with st.container(key=mode_keys["初級モード"]):
-            if st.button("🟢\n初級モード", key="mode_btn_beginner", use_container_width=True):
+            if st.button("初級モード", key="mode_btn_beginner", use_container_width=True):
                 st.session_state.selected_mode = "初級モード"
                 st.rerun()
 
     with btn_col2:
         with st.container(key=mode_keys["中級モード"]):
-            if st.button("🟡\n中級モード", key="mode_btn_intermediate", use_container_width=True):
+            if st.button("中級モード", key="mode_btn_intermediate", use_container_width=True):
                 st.session_state.selected_mode = "中級モード"
                 st.rerun()
 
     with btn_col3:
         with st.container(key=mode_keys["高級モード"]):
-            if st.button("🔴\n高級モード", key="mode_btn_advanced", use_container_width=True):
+            if st.button("高級モード", key="mode_btn_advanced", use_container_width=True):
                 st.session_state.selected_mode = "高級モード"
                 st.rerun()
 
