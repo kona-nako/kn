@@ -214,35 +214,38 @@ if not st.session_state.started:
         button_css += f"""
         .st-key-{m_key} {{
             background-color: {mode_colors[m_name]};
-            border-radius: 16px;
-            padding: 14px 10px 18px 10px;
+            border-radius: 20px;
+            padding: 28px 16px 32px 16px;
             display: flex;
             flex-direction: column;
             align-items: stretch;
+            min-height: 220px;
+            justify-content: center;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button {{
             width: 100%;
             background-color: transparent;
             border: none;
             box-shadow: none;
-            font-size: 1.5rem;
+            font-size: 2.4rem;
             font-weight: 800;
             color: {mode_text_colors[m_name]};
             white-space: normal;
             word-break: break-word;
-            padding: 4px 0;
+            padding: 8px 0;
+            line-height: 1.3;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button:hover {{
             background-color: rgba(255, 255, 255, 0.15);
             color: {mode_text_colors[m_name]};
         }}
         .st-key-{m_key} .mode-info {{
-            font-size: 0.85rem;
+            font-size: 1.15rem;
             font-weight: 400;
             color: {mode_text_colors[m_name]};
             text-align: center;
-            line-height: 1.4;
-            margin-top: 2px;
+            line-height: 1.5;
+            margin-top: 8px;
         }}
         """
     button_css += "</style>"
