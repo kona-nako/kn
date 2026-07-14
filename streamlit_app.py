@@ -203,11 +203,6 @@ if not st.session_state.started:
         "中級モード": "mode_container_intermediate",
         "高級モード": "mode_container_advanced",
     }
-    mode_emojis = {
-        "初級モード": "🟢",
-        "中級モード": "🟡",
-        "高級モード": "🔴",
-    }
 
     button_css = "<style>"
     for m_name, m_key in mode_keys.items():
