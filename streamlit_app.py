@@ -152,14 +152,6 @@ st.markdown(
         background-color: #ff4b4b;
         transition: width 0.2s linear;
     }
-    .st-key-mode_button_area div[data-testid="stButton"] button {
-        height: 160px;
-        width: 100%;
-        font-size: 1.6rem;
-        font-weight: 700;
-        border-radius: 16px;
-        white-space: normal;
-    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -195,24 +187,65 @@ if not st.session_state.started:
 
     st.markdown("### モードを選んでね")
 
-    with st.container(key="mode_button_area"):
-        btn_col1, btn_col2, btn_col3 = st.columns(3)
+    # 各モードボタンの塗りつぶし色と、選択中を示す枠線を動的に生成
+    mode_colors = {
+        "初級モード": "#2ecc71",   # 緑
+        "中級モード": "#f1c40f",   # 黄
+        "高級モード": "#e74c3c",   # 赤
+    }
+    mode_text_colors = {
+        "初級モード": "#ffffff",
+        "中級モード": "#3d3400",
+        "高級モード": "#ffffff",
+    }
+    mode_keys = {
+        "初級モード": "mode_container_beginner",
+        "中級モード": "mode_container_intermediate",
+        "高級モード": "mode_container_advanced",
+    }
 
-        with btn_col1:
-            type1 = "primary" if st.session_state.selected_mode == "初級モード" else "secondary"
-            if st.button("🟢\n初級モード", key="mode_btn_beginner", use_container_width=True, type=type1):
+    button_css = "<style>"
+    for m_name, m_key in mode_keys.items():
+        is_selected = st.session_state.selected_mode == m_name
+        border_style = "5px solid #ffffff" if is_selected else "5px solid transparent"
+        button_css += f"""
+        .st-key-{m_key} div[data-testid="stButton"] button {{
+            height: 160px;
+            width: 100%;
+            font-size: 1.6rem;
+            font-weight: 700;
+            border-radius: 16px;
+            white-space: normal;
+            background-color: {mode_colors[m_name]};
+            color: {mode_text_colors[m_name]};
+            border: {border_style};
+        }}
+        .st-key-{m_key} div[data-testid="stButton"] button:hover {{
+            background-color: {mode_colors[m_name]};
+            color: {mode_text_colors[m_name]};
+            opacity: 0.85;
+        }}
+        """
+    button_css += "</style>"
+    st.markdown(button_css, unsafe_allow_html=True)
+
+    btn_col1, btn_col2, btn_col3 = st.columns(3)
+
+    with btn_col1:
+        with st.container(key=mode_keys["初級モード"]):
+            if st.button("🟢\n初級モード", key="mode_btn_beginner", use_container_width=True):
                 st.session_state.selected_mode = "初級モード"
                 st.rerun()
 
-        with btn_col2:
-            type2 = "primary" if st.session_state.selected_mode == "中級モード" else "secondary"
-            if st.button("🟡\n中級モード", key="mode_btn_intermediate", use_container_width=True, type=type2):
+    with btn_col2:
+        with st.container(key=mode_keys["中級モード"]):
+            if st.button("🟡\n中級モード", key="mode_btn_intermediate", use_container_width=True):
                 st.session_state.selected_mode = "中級モード"
                 st.rerun()
 
-        with btn_col3:
-            type3 = "primary" if st.session_state.selected_mode == "高級モード" else "secondary"
-            if st.button("🔴\n高級モード", key="mode_btn_advanced", use_container_width=True, type=type3):
+    with btn_col3:
+        with st.container(key=mode_keys["高級モード"]):
+            if st.button("🔴\n高級モード", key="mode_btn_advanced", use_container_width=True):
                 st.session_state.selected_mode = "高級モード"
                 st.rerun()
 
