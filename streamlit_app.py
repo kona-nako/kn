@@ -36,6 +36,57 @@ QUESTIONS = [
 ]
  
 # -------------------------
+# 右端固定タイマー用CSS
+# -------------------------
+st.markdown(
+    """
+    <style>
+    .fixed-timer-panel {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        width: 220px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .timer-box {
+        background-color: rgba(38, 39, 48, 0.9);
+        border: 1px solid rgba(250, 250, 250, 0.2);
+        border-radius: 8px;
+        padding: 12px 16px;
+    }
+    .timer-label {
+        font-size: 0.9rem;
+        color: rgba(250, 250, 250, 0.7);
+        margin-bottom: 4px;
+    }
+    .timer-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #fafafa;
+        margin-bottom: 8px;
+    }
+    .timer-progress-track {
+        width: 100%;
+        height: 8px;
+        background-color: rgba(250, 250, 250, 0.2);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .timer-progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        background-color: #ff4b4b;
+        transition: width 0.2s linear;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+ 
+# -------------------------
 # 初期化
 # -------------------------
 if "started" not in st.session_state:
@@ -81,6 +132,9 @@ question_elapsed = time.time() - st.session_state.question_start
 game_remaining = max(0, GAME_LIMIT - int(game_elapsed))
 question_remaining = max(0, QUESTION_LIMIT - int(question_elapsed))
  
+game_pct = int((game_remaining / GAME_LIMIT) * 100)
+question_pct = int((question_remaining / QUESTION_LIMIT) * 100)
+ 
 # -------------------------
 # 次の問題
 # -------------------------
@@ -117,22 +171,34 @@ if question_elapsed >= QUESTION_LIMIT:
     next_question()
  
 # -------------------------
-# 上部タイマー
+# 右端固定タイマーパネル（縦並び）
+# -------------------------
+st.markdown(
+    f"""
+    <div class="fixed-timer-panel">
+        <div class="timer-box">
+            <div class="timer-label">⏰ ゲーム残り時間</div>
+            <div class="timer-value">{game_remaining} 秒</div>
+            <div class="timer-progress-track">
+                <div class="timer-progress-fill" style="width: {game_pct}%;"></div>
+            </div>
+        </div>
+        <div class="timer-box">
+            <div class="timer-label">⌛ この問題の残り時間</div>
+            <div class="timer-value">{question_remaining} 秒</div>
+            <div class="timer-progress-track">
+                <div class="timer-progress-fill" style="width: {question_pct}%;"></div>
+            </div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+ 
+# -------------------------
+# 上部タイトル
 # -------------------------
 st.title("🍣 高速学習アプリ")
- 
-# ゲームタイマーと問題タイマーを横並びに配置
-# 中央に狭い列を2つ作り、左右を空列にすることで
-# 全体の横幅を抑えつつ横並びにする
-timer_left, timer_col1, timer_col2, timer_right = st.columns([1, 2, 2, 1])
- 
-with timer_col1:
-    st.metric("⏰ ゲーム残り時間", f"{game_remaining} 秒")
-    st.progress(game_remaining / GAME_LIMIT)
- 
-with timer_col2:
-    st.metric("⌛ この問題の残り時間", f"{question_remaining} 秒")
-    st.progress(question_remaining / QUESTION_LIMIT)
  
 st.write("")
  
