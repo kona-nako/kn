@@ -152,6 +152,14 @@ st.markdown(
         background-color: #ff4b4b;
         transition: width 0.2s linear;
     }
+    .st-key-mode_button_area div[data-testid="stButton"] button {
+        height: 160px;
+        width: 100%;
+        font-size: 1.6rem;
+        font-weight: 700;
+        border-radius: 16px;
+        white-space: normal;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -175,6 +183,9 @@ if "radio_id" not in st.session_state:
 if "mode" not in st.session_state:
     st.session_state.mode = "初級モード"
 
+if "selected_mode" not in st.session_state:
+    st.session_state.selected_mode = "初級モード"
+
 # -------------------------
 # スタート前画面
 # -------------------------
@@ -183,13 +194,29 @@ if not st.session_state.started:
     st.title("🍣 高速学習アプリ")
 
     st.markdown("### モードを選んでね")
-    selected_mode = st.radio(
-        "難易度",
-        ["初級モード", "中級モード", "高級モード"],
-        horizontal=True,
-        label_visibility="collapsed",
-    )
 
+    with st.container(key="mode_button_area"):
+        btn_col1, btn_col2, btn_col3 = st.columns(3)
+
+        with btn_col1:
+            type1 = "primary" if st.session_state.selected_mode == "初級モード" else "secondary"
+            if st.button("🟢\n初級モード", key="mode_btn_beginner", use_container_width=True, type=type1):
+                st.session_state.selected_mode = "初級モード"
+                st.rerun()
+
+        with btn_col2:
+            type2 = "primary" if st.session_state.selected_mode == "中級モード" else "secondary"
+            if st.button("🟡\n中級モード", key="mode_btn_intermediate", use_container_width=True, type=type2):
+                st.session_state.selected_mode = "中級モード"
+                st.rerun()
+
+        with btn_col3:
+            type3 = "primary" if st.session_state.selected_mode == "高級モード" else "secondary"
+            if st.button("🔴\n高級モード", key="mode_btn_advanced", use_container_width=True, type=type3):
+                st.session_state.selected_mode = "高級モード"
+                st.rerun()
+
+    selected_mode = st.session_state.selected_mode
     selected_settings = MODE_SETTINGS[selected_mode]
     st.markdown(f"## 制限時間：{selected_settings['game_limit']}秒")
     st.markdown(f"### 1問{selected_settings['question_limit']}秒以内に答えよう！")
