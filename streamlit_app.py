@@ -215,11 +215,11 @@ if not st.session_state.started:
         .st-key-{m_key} {{
             background-color: {mode_colors[m_name]};
             border-radius: 20px;
-            padding: 28px 16px 32px 16px;
+            padding: 32px 16px 36px 16px;
             display: flex;
             flex-direction: column;
             align-items: stretch;
-            min-height: 220px;
+            min-height: 260px;
             justify-content: center;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button {{
@@ -227,8 +227,8 @@ if not st.session_state.started:
             background-color: transparent;
             border: none;
             box-shadow: none;
-            font-size: 2.4rem;
-            font-weight: 800;
+            font-size: 3.2rem;
+            font-weight: 900;
             color: {mode_text_colors[m_name]};
             white-space: normal;
             word-break: break-word;
