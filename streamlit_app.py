@@ -4,8 +4,14 @@ import random
 
 st.set_page_config(page_title="高速学習アプリ", layout="wide")
 
-GAME_LIMIT = 30
-QUESTION_LIMIT = 5
+# -------------------------
+# モード別のタイマー設定（秒）
+# -------------------------
+MODE_SETTINGS = {
+    "初級モード": {"game_limit": 30, "question_limit": 5},
+    "中級モード": {"game_limit": 45, "question_limit": 10},
+    "高級モード": {"game_limit": 60, "question_limit": 15},
+}
 
 # -------------------------
 # 難易度別の問題セット
@@ -176,9 +182,6 @@ if not st.session_state.started:
 
     st.title("🍣 高速学習アプリ")
 
-    st.markdown("## 制限時間：30秒")
-    st.markdown("### 1問5秒以内に答えよう！")
-
     st.markdown("### モードを選んでね")
     selected_mode = st.radio(
         "難易度",
@@ -187,9 +190,15 @@ if not st.session_state.started:
         label_visibility="collapsed",
     )
 
+    selected_settings = MODE_SETTINGS[selected_mode]
+    st.markdown(f"## 制限時間：{selected_settings['game_limit']}秒")
+    st.markdown(f"### 1問{selected_settings['question_limit']}秒以内に答えよう！")
+
     if st.button("▶ スタート！", use_container_width=True):
 
         st.session_state.mode = selected_mode
+        st.session_state.game_limit = MODE_SETTINGS[selected_mode]["game_limit"]
+        st.session_state.question_limit = MODE_SETTINGS[selected_mode]["question_limit"]
         st.session_state.question = random.choice(MODE_QUESTIONS[selected_mode])
         st.session_state.started = True
         st.session_state.game_start = time.time()
@@ -209,11 +218,14 @@ current_questions = MODE_QUESTIONS[st.session_state.mode]
 game_elapsed = time.time() - st.session_state.game_start
 question_elapsed = time.time() - st.session_state.question_start
 
-game_remaining = max(0, GAME_LIMIT - int(game_elapsed))
-question_remaining = max(0, QUESTION_LIMIT - int(question_elapsed))
+game_limit = st.session_state.game_limit
+question_limit = st.session_state.question_limit
 
-game_pct = int((game_remaining / GAME_LIMIT) * 100)
-question_pct = int((question_remaining / QUESTION_LIMIT) * 100)
+game_remaining = max(0, game_limit - int(game_elapsed))
+question_remaining = max(0, question_limit - int(question_elapsed))
+
+game_pct = int((game_remaining / game_limit) * 100)
+question_pct = int((question_remaining / question_limit) * 100)
 
 # -------------------------
 # 次の問題
@@ -227,7 +239,7 @@ def next_question():
 # -------------------------
 # ゲーム終了
 # -------------------------
-if game_elapsed >= GAME_LIMIT:
+if game_elapsed >= game_limit:
 
     st.title("🎉 ゲーム終了")
 
@@ -247,7 +259,7 @@ if game_elapsed >= GAME_LIMIT:
 # -------------------------
 # 問題時間終了
 # -------------------------
-if question_elapsed >= QUESTION_LIMIT:
+if question_elapsed >= question_limit:
     st.session_state.wrong += 1
     next_question()
 
