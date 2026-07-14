@@ -7,12 +7,38 @@ st.set_page_config(page_title="高速学習アプリ", layout="wide")
 GAME_LIMIT = 30
 QUESTION_LIMIT = 5
 
-QUESTIONS = [
+# -------------------------
+# 難易度別の問題セット
+# -------------------------
+QUESTIONS_BEGINNER = [
     {
         "question": "日本の首都は？",
         "choices": ["大阪", "東京", "福岡", "札幌"],
         "answer": "東京"
     },
+    {
+        "question": "3 + 4 = ?",
+        "choices": ["6", "7", "8", "9"],
+        "answer": "7"
+    },
+    {
+        "question": "英語で『犬』は？",
+        "choices": ["Cat", "Bird", "Dog", "Fish"],
+        "answer": "Dog"
+    },
+    {
+        "question": "1年は何ヶ月？",
+        "choices": ["10ヶ月", "11ヶ月", "12ヶ月", "13ヶ月"],
+        "answer": "12ヶ月"
+    },
+    {
+        "question": "りんごの色は？",
+        "choices": ["青", "赤", "紫", "黒"],
+        "answer": "赤"
+    },
+]
+
+QUESTIONS_INTERMEDIATE = [
     {
         "question": "5 × 8 = ?",
         "choices": ["30", "35", "40", "45"],
@@ -24,16 +50,55 @@ QUESTIONS = [
         "answer": "H2O"
     },
     {
-        "question": "英語で『犬』は？",
-        "choices": ["Cat", "Bird", "Dog", "Fish"],
-        "answer": "Dog"
-    },
-    {
         "question": "100 ÷ 4 = ?",
         "choices": ["20", "25", "30", "40"],
         "answer": "25"
     },
+    {
+        "question": "明治維新が起きたのは何世紀？",
+        "choices": ["17世紀", "18世紀", "19世紀", "20世紀"],
+        "answer": "19世紀"
+    },
+    {
+        "question": "英語で『速い』は？",
+        "choices": ["Slow", "Fast", "Quiet", "Heavy"],
+        "answer": "Fast"
+    },
 ]
+
+QUESTIONS_ADVANCED = [
+    {
+        "question": "二次方程式 x² - 5x + 6 = 0 の解は？",
+        "choices": ["x=1,4", "x=2,3", "x=-2,-3", "x=1,6"],
+        "answer": "x=2,3"
+    },
+    {
+        "question": "光合成で使われる気体は？",
+        "choices": ["酸素", "窒素", "二酸化炭素", "水素"],
+        "answer": "二酸化炭素"
+    },
+    {
+        "question": "フランス革命が始まったのは何年？",
+        "choices": ["1689年", "1776年", "1789年", "1804年"],
+        "answer": "1789年"
+    },
+    {
+        "question": "英語で『しかしながら』は？",
+        "choices": ["Therefore", "However", "Moreover", "Because"],
+        "answer": "However"
+    },
+    {
+        "question": "円の面積を求める公式は？",
+        "choices": ["πr", "2πr", "πr²", "πd"],
+        "answer": "πr²"
+    },
+]
+
+MODE_QUESTIONS = {
+    "初級モード": QUESTIONS_BEGINNER,
+    "中級モード": QUESTIONS_INTERMEDIATE,
+    "高級モード": QUESTIONS_ADVANCED,
+}
 
 # -------------------------
 # 右端固定タイマー用CSS
@@ -98,11 +163,11 @@ if "score" not in st.session_state:
 if "wrong" not in st.session_state:
     st.session_state.wrong = 0
 
-if "question" not in st.session_state:
-    st.session_state.question = random.choice(QUESTIONS)
-
 if "radio_id" not in st.session_state:
     st.session_state.radio_id = 0
+
+if "mode" not in st.session_state:
+    st.session_state.mode = "初級モード"
 
 # -------------------------
 # スタート前画面
@@ -114,14 +179,29 @@ if not st.session_state.started:
     st.markdown("## 制限時間：30秒")
     st.markdown("### 1問5秒以内に答えよう！")
 
+    st.markdown("### モードを選んでね")
+    selected_mode = st.radio(
+        "難易度",
+        ["初級モード", "中級モード", "高級モード"],
+        horizontal=True,
+        label_visibility="collapsed",
+    )
+
     if st.button("▶ スタート！", use_container_width=True):
 
+        st.session_state.mode = selected_mode
+        st.session_state.question = random.choice(MODE_QUESTIONS[selected_mode])
         st.session_state.started = True
         st.session_state.game_start = time.time()
         st.session_state.question_start = time.time()
         st.rerun()
 
     st.stop()
+
+# -------------------------
+# 現在のモードの問題セット
+# -------------------------
+current_questions = MODE_QUESTIONS[st.session_state.mode]
 
 # -------------------------
 # タイマー
@@ -139,7 +219,7 @@ question_pct = int((question_remaining / QUESTION_LIMIT) * 100)
 # 次の問題
 # -------------------------
 def next_question():
-    st.session_state.question = random.choice(QUESTIONS)
+    st.session_state.question = random.choice(current_questions)
     st.session_state.question_start = time.time()
     st.session_state.radio_id += 1
     st.rerun()
@@ -151,6 +231,7 @@ if game_elapsed >= GAME_LIMIT:
 
     st.title("🎉 ゲーム終了")
 
+    st.markdown(f"#### モード：{st.session_state.mode}")
     st.success(f"正解：{st.session_state.score}")
     st.error(f"不正解：{st.session_state.wrong}")
 
@@ -171,7 +252,7 @@ if question_elapsed >= QUESTION_LIMIT:
     next_question()
 
 # -------------------------
-# 右端固定タイマーパネル（縦並び）
+# 右端固定タイマー・スコアパネル（縦並び）
 # -------------------------
 st.markdown(
     f"""
@@ -207,6 +288,7 @@ st.markdown(
 # 上部タイトル
 # -------------------------
 st.title("🍣 高速学習アプリ")
+st.caption(f"モード：{st.session_state.mode}")
 
 st.write("")
 
