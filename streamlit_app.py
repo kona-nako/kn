@@ -187,7 +187,7 @@ if not st.session_state.started:
 
     st.markdown("### モードを選んでね")
 
-    # 各モードボタンの塗りつぶし色と、選択中を示す枠線を動的に生成
+    # 各モードボタンの塗りつぶし色・文字色・選択中の枠線を動的に生成
     mode_colors = {
         "初級モード": "#2ecc71",   # 緑
         "中級モード": "#f1c40f",   # 黄
@@ -203,67 +203,92 @@ if not st.session_state.started:
         "中級モード": "mode_container_intermediate",
         "高級モード": "mode_container_advanced",
     }
+    mode_emojis = {
+        "初級モード": "🟢",
+        "中級モード": "🟡",
+        "高級モード": "🔴",
+    }
 
     button_css = "<style>"
     for m_name, m_key in mode_keys.items():
-        is_selected = st.session_state.selected_mode == m_name
-        border_style = "5px solid #ffffff" if is_selected else "5px solid transparent"
         button_css += f"""
+        .st-key-{m_key} {{
+            position: relative;
+        }}
         .st-key-{m_key} div[data-testid="stButton"] button {{
             height: 160px;
             width: 100%;
-            font-size: 1.6rem;
-            font-weight: 700;
             border-radius: 16px;
-            white-space: normal;
             background-color: {mode_colors[m_name]};
-            color: {mode_text_colors[m_name]};
-            border: {border_style};
+            border: 5px solid transparent;
+            color: transparent;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button:hover {{
             background-color: {mode_colors[m_name]};
-            color: {mode_text_colors[m_name]};
             opacity: 0.85;
+        }}
+        .st-key-{m_key} .mode-label-overlay {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 5;
+            text-align: center;
+        }}
+        .st-key-{m_key} .mode-title {{
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: {mode_text_colors[m_name]};
+        }}
+        .st-key-{m_key} .mode-info {{
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: {mode_text_colors[m_name]};
+            margin-top: 6px;
         }}
         """
     button_css += "</style>"
     st.markdown(button_css, unsafe_allow_html=True)
 
-    btn_col1, btn_col2, btn_col3 = st.columns(3)
-
-    with btn_col1:
-        with st.container(key=mode_keys["初級モード"]):
-            if st.button("初級モード", key="mode_btn_beginner", use_container_width=True):
-                st.session_state.selected_mode = "初級モード"
-                st.rerun()
-
-    with btn_col2:
-        with st.container(key=mode_keys["中級モード"]):
-            if st.button("中級モード", key="mode_btn_intermediate", use_container_width=True):
-                st.session_state.selected_mode = "中級モード"
-                st.rerun()
-
-    with btn_col3:
-        with st.container(key=mode_keys["高級モード"]):
-            if st.button("高級モード", key="mode_btn_advanced", use_container_width=True):
-                st.session_state.selected_mode = "高級モード"
-                st.rerun()
-
-    selected_mode = st.session_state.selected_mode
-    selected_settings = MODE_SETTINGS[selected_mode]
-    st.markdown(f"## 制限時間：{selected_settings['game_limit']}秒")
-    st.markdown(f"### 1問{selected_settings['question_limit']}秒以内に答えよう！")
-
-    if st.button("▶ スタート！", use_container_width=True):
-
-        st.session_state.mode = selected_mode
-        st.session_state.game_limit = MODE_SETTINGS[selected_mode]["game_limit"]
-        st.session_state.question_limit = MODE_SETTINGS[selected_mode]["question_limit"]
-        st.session_state.question = random.choice(MODE_QUESTIONS[selected_mode])
+    def start_game(mode_name):
+        st.session_state.mode = mode_name
+        st.session_state.game_limit = MODE_SETTINGS[mode_name]["game_limit"]
+        st.session_state.question_limit = MODE_SETTINGS[mode_name]["question_limit"]
+        st.session_state.question = random.choice(MODE_QUESTIONS[mode_name])
         st.session_state.started = True
         st.session_state.game_start = time.time()
         st.session_state.question_start = time.time()
         st.rerun()
+
+    btn_col1, btn_col2, btn_col3 = st.columns(3)
+    btn_cols = {"初級モード": btn_col1, "中級モード": btn_col2, "高級モード": btn_col3}
+
+    for m_name, m_key in mode_keys.items():
+        with btn_cols[m_name]:
+            with st.container(key=m_key):
+                settings = MODE_SETTINGS[m_name]
+                if st.button(" ", key=f"{m_key}_btn", use_container_width=True):
+                    st.session_state.selected_mode = m_name
+                    start_game(m_name)
+
+                st.markdown(
+                    f"""
+                    <div class="mode-label-overlay">
+                        <div class="mode-title">{mode_emojis[m_name]} {m_name}</div>
+                        <div class="mode-info">
+                            制限時間：{settings['game_limit']}秒<br>
+                            1問：{settings['question_limit']}秒以内
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
     st.stop()
 
