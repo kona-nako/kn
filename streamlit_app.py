@@ -213,44 +213,36 @@ if not st.session_state.started:
     for m_name, m_key in mode_keys.items():
         button_css += f"""
         .st-key-{m_key} {{
-            position: relative;
-        }}
-        .st-key-{m_key} div[data-testid="stButton"] button {{
-            height: 160px;
-            width: 100%;
+            background-color: {mode_colors[m_name]};
             border-radius: 16px;
-            background-color: {mode_colors[m_name]};
-            border: 5px solid transparent;
-            color: transparent;
-        }}
-        .st-key-{m_key} div[data-testid="stButton"] button:hover {{
-            background-color: {mode_colors[m_name]};
-            opacity: 0.85;
-        }}
-        .st-key-{m_key} .mode-label-overlay {{
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 160px;
+            padding: 14px 10px 18px 10px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-            z-index: 5;
-            text-align: center;
+            align-items: stretch;
         }}
-        .st-key-{m_key} .mode-title {{
-            font-size: 1.7rem;
+        .st-key-{m_key} div[data-testid="stButton"] button {{
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            font-size: 1.5rem;
             font-weight: 800;
+            color: {mode_text_colors[m_name]};
+            white-space: normal;
+            word-break: break-word;
+            padding: 4px 0;
+        }}
+        .st-key-{m_key} div[data-testid="stButton"] button:hover {{
+            background-color: rgba(255, 255, 255, 0.15);
             color: {mode_text_colors[m_name]};
         }}
         .st-key-{m_key} .mode-info {{
             font-size: 0.85rem;
             font-weight: 400;
             color: {mode_text_colors[m_name]};
-            margin-top: 6px;
+            text-align: center;
+            line-height: 1.4;
+            margin-top: 2px;
         }}
         """
     button_css += "</style>"
@@ -273,18 +265,18 @@ if not st.session_state.started:
         with btn_cols[m_name]:
             with st.container(key=m_key):
                 settings = MODE_SETTINGS[m_name]
-                if st.button(" ", key=f"{m_key}_btn", use_container_width=True):
-                    st.session_state.selected_mode = m_name
+                if st.button(
+                    f"{mode_emojis[m_name]} {m_name}",
+                    key=f"{m_key}_btn",
+                    use_container_width=True,
+                ):
                     start_game(m_name)
 
                 st.markdown(
                     f"""
-                    <div class="mode-label-overlay">
-                        <div class="mode-title">{mode_emojis[m_name]} {m_name}</div>
-                        <div class="mode-info">
-                            制限時間：{settings['game_limit']}秒<br>
-                            1問：{settings['question_limit']}秒以内
-                        </div>
+                    <div class="mode-info">
+                        制限時間：{settings['game_limit']}秒<br>
+                        1問：{settings['question_limit']}秒以内
                     </div>
                     """,
                     unsafe_allow_html=True,
