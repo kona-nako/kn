@@ -488,8 +488,14 @@ def draw_question(mode_name):
     if not st.session_state.remaining_questions:
         pool = MODE_QUESTIONS[mode_name][:]
         random.shuffle(pool)
+        # 周をまたいだ直後に、直前に出した問題がまた選ばれないようにする
+        last_q = st.session_state.get("last_question")
+        if last_q is not None and len(pool) > 1 and pool[-1] is last_q:
+            pool[-1], pool[0] = pool[0], pool[-1]
         st.session_state.remaining_questions = pool
-    return st.session_state.remaining_questions.pop()
+    q = st.session_state.remaining_questions.pop()
+    st.session_state.last_question = q
+    return q
 
 # -------------------------
 # スタート前画面
