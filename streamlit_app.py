@@ -227,7 +227,7 @@ if not st.session_state.started:
             background-color: transparent;
             border: none;
             box-shadow: none;
-            font-size: 3.3rem;
+            font-size: 33rem;
             font-weight: 900;
             color: {mode_text_colors[m_name]};
             white-space: normal;
