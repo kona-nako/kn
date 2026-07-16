@@ -8,9 +8,9 @@ st.set_page_config(page_title="高速学習アプリ", layout="wide")
 # モード別のタイマー設定（秒）
 # -------------------------
 MODE_SETTINGS = {
-    "初級モード": {"game_limit": 30, "question_limit": 5},
-    "中級モード": {"game_limit": 45, "question_limit": 10},
-    "高級モード": {"game_limit": 60, "question_limit": 15},
+    "かんたん": {"game_limit": 30, "question_limit": 5},
+    "ふつう": {"game_limit": 45, "question_limit": 10},
+    "むずかしい": {"game_limit": 60, "question_limit": 15},
 }
 
 # -------------------------
@@ -101,9 +101,9 @@ QUESTIONS_ADVANCED = [
 ]
 
 MODE_QUESTIONS = {
-    "初級モード": QUESTIONS_BEGINNER,
-    "中級モード": QUESTIONS_INTERMEDIATE,
-    "高級モード": QUESTIONS_ADVANCED,
+    "かんたん": QUESTIONS_BEGINNER,
+    "ふつう": QUESTIONS_INTERMEDIATE,
+    "むずかしい": QUESTIONS_ADVANCED,
 }
 
 # -------------------------
@@ -173,10 +173,10 @@ if "radio_id" not in st.session_state:
     st.session_state.radio_id = 0
 
 if "mode" not in st.session_state:
-    st.session_state.mode = "初級モード"
+    st.session_state.mode = "かんたん"
 
 if "selected_mode" not in st.session_state:
-    st.session_state.selected_mode = "初級モード"
+    st.session_state.selected_mode = "かんたん"
 
 # -------------------------
 # スタート前画面
@@ -262,7 +262,7 @@ if not st.session_state.started:
         st.rerun()
 
     btn_col1, btn_col2, btn_col3 = st.columns(3)
-    btn_cols = {"初級モード": btn_col1, "中級モード": btn_col2, "高級モード": btn_col3}
+    btn_cols = {"かんたん": btn_col1, "ふつう": btn_col2, "むずかしい": btn_col3}
 
     for m_name, m_key in mode_keys.items():
         with btn_cols[m_name]:
