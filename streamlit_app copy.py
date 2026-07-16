@@ -527,44 +527,48 @@ if not st.session_state.started:
     for m_name, m_key in mode_keys.items():
         button_css += f"""
         .st-key-{m_key} {{
-            background-color: {mode_colors[m_name]};
-            border-radius: 20px;
-            padding: 48px 24px 52px 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            min-height: 360px;
-            justify-content: center;
+            background-color: {mode_colors[m_name]} !important;
+            border-radius: 20px !important;
+            padding: 24px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            min-height: 400px !important;
+            justify-content: center !important;
+        }}
+        .st-key-{m_key} div[data-testid="stButton"] {{
+            display: flex !important;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button {{
-            width: 100%;
-            background-color: transparent;
-            border: none;
-            box-shadow: none;
-            font-size: 3.4rem;
-            font-weight: 900;
-            letter-spacing: 0.05em;
-            color: {mode_text_colors[m_name]};
-            white-space: normal;
-            word-break: break-word;
-            padding: 16px 0;
-            line-height: 1.3;
+            width: 100% !important;
+            height: 260px !important;
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            font-size: 3.8rem !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.05em !important;
+            color: {mode_text_colors[m_name]} !important;
+            white-space: normal !important;
+            word-break: break-word !important;
+            padding: 16px !important;
+            line-height: 1.3 !important;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button p {{
-            font-size: 3.4rem;
-            font-weight: 900;
+            font-size: 3.8rem !important;
+            font-weight: 900 !important;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button:hover {{
-            background-color: rgba(255, 255, 255, 0.15);
-            color: {mode_text_colors[m_name]};
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            color: {mode_text_colors[m_name]} !important;
         }}
         .st-key-{m_key} .mode-info {{
-            font-size: 1.4rem;
-            font-weight: 500;
-            color: {mode_text_colors[m_name]};
-            text-align: center;
-            line-height: 1.6;
-            margin-top: 16px;
+            font-size: 1.4rem !important;
+            font-weight: 500 !important;
+            color: {mode_text_colors[m_name]} !important;
+            text-align: center !important;
+            line-height: 1.6 !important;
+            margin-top: 16px !important;
         }}
         """
     button_css += "</style>"
@@ -722,17 +726,44 @@ answer = st.radio(
     key=f"radio_{st.session_state.radio_id}"
 )
 
-if st.button("回答", use_container_width=True):
+st.markdown(
+    """
+    <style>
+    .st-key-answer_btn_container div[data-testid="stButton"] button {
+        width: 100% !important;
+        height: 90px !important;
+        font-size: 2rem !important;
+        font-weight: 800 !important;
+        border-radius: 14px !important;
+        background-color: #ff4b4b !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    .st-key-answer_btn_container div[data-testid="stButton"] button p {
+        font-size: 2rem !important;
+        font-weight: 800 !important;
+    }
+    .st-key-answer_btn_container div[data-testid="stButton"] button:hover {
+        background-color: #ff6b6b !important;
+        color: #ffffff !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
-    if answer == q["answer"]:
-        st.session_state.score += 1
-        st.success("正解！")
-    else:
-        st.session_state.wrong += 1
-        st.error(f"不正解！（正解：{q['answer']}）")
+with st.container(key="answer_btn_container"):
+    if st.button("回答", use_container_width=True):
 
-    time.sleep(0.5)
-    next_question()
+        if answer == q["answer"]:
+            st.session_state.score += 1
+            st.success("正解！")
+        else:
+            st.session_state.wrong += 1
+            st.error(f"不正解！（正解：{q['answer']}）")
+
+        time.sleep(0.5)
+        next_question()
 
 # -------------------------
 # 自動更新
