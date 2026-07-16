@@ -478,6 +478,19 @@ if "mode" not in st.session_state:
 if "selected_mode" not in st.session_state:
     st.session_state.selected_mode = "かんたん"
 
+if "remaining_questions" not in st.session_state:
+    st.session_state.remaining_questions = []
+
+# -------------------------
+# 問題を1問取り出す（出題済みは山が尽きるまで出さない）
+# -------------------------
+def draw_question(mode_name):
+    if not st.session_state.remaining_questions:
+        pool = MODE_QUESTIONS[mode_name][:]
+        random.shuffle(pool)
+        st.session_state.remaining_questions = pool
+    return st.session_state.remaining_questions.pop()
+
 # -------------------------
 # スタート前画面
 # -------------------------
@@ -555,7 +568,11 @@ if not st.session_state.started:
         st.session_state.mode = mode_name
         st.session_state.game_limit = MODE_SETTINGS[mode_name]["game_limit"]
         st.session_state.question_limit = MODE_SETTINGS[mode_name]["question_limit"]
-        st.session_state.question = random.choice(MODE_QUESTIONS[mode_name])
+        # 出題プールをシャッフルして作り直す（＝出題済みは尽きるまで出さない）
+        pool = MODE_QUESTIONS[mode_name][:]
+        random.shuffle(pool)
+        st.session_state.remaining_questions = pool
+        st.session_state.question = draw_question(mode_name)
         st.session_state.started = True
         st.session_state.game_start = time.time()
         st.session_state.question_start = time.time()
@@ -611,7 +628,7 @@ question_pct = int((question_remaining / question_limit) * 100)
 # 次の問題
 # -------------------------
 def next_question():
-    st.session_state.question = random.choice(current_questions)
+    st.session_state.question = draw_question(st.session_state.mode)
     st.session_state.question_start = time.time()
     st.session_state.radio_id += 1
     st.rerun()
