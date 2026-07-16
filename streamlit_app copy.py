@@ -183,30 +183,25 @@ if "selected_mode" not in st.session_state:
 # -------------------------
 if not st.session_state.started:
 
-    st.title("🍣 高速学習アプリ")
+    st.title("高速学習アプリ")
 
     st.markdown("### モードを選んでね")
 
     # 各モードボタンの塗りつぶし色・文字色・選択中の枠線を動的に生成
     mode_colors = {
-        "初級モード": "#2ecc71",   # 緑
-        "中級モード": "#f1c40f",   # 黄
-        "高級モード": "#e74c3c",   # 赤
+        "かんたん": "#2ecc71",   # 緑
+        "ふつう": "#f1c40f",   # 黄
+        "むずかしい": "#e74c3c",   # 赤
     }
     mode_text_colors = {
-        "初級モード": "#ffffff",
-        "中級モード": "#3d3400",
-        "高級モード": "#ffffff",
+        "かんたん": "#ffffff",
+        "ふつう": "#3d3400",
+        "むずかしい": "#ffffff",
     }
     mode_keys = {
-        "初級モード": "mode_container_beginner",
-        "中級モード": "mode_container_intermediate",
-        "高級モード": "mode_container_advanced",
-    }
-    mode_emojis = {
-        "初級モード": "🟢",
-        "中級モード": "🟡",
-        "高級モード": "🔴",
+        "かんたん": "mode_container_beginner",
+        "ふつう": "mode_container_intermediate",
+        "むずかしい": "mode_container_advanced",
     }
 
     button_css = "<style>"
