@@ -8,9 +8,9 @@ st.set_page_config(page_title="高速学習アプリ", layout="wide")
 # モード別のタイマー設定（秒）
 # -------------------------
 MODE_SETTINGS = {
-    "かんたん": {"game_limit": 30, "question_limit": 5},
-    "ふつう": {"game_limit": 45, "question_limit": 10},
-    "むずかしい": {"game_limit": 60, "question_limit": 15},
+    "初級モード": {"game_limit": 30, "question_limit": 5},
+    "中級モード": {"game_limit": 45, "question_limit": 10},
+    "高級モード": {"game_limit": 60, "question_limit": 15},
 }
 
 # -------------------------
@@ -42,106 +42,6 @@ QUESTIONS_BEGINNER = [
         "choices": ["青", "赤", "紫", "黒"],
         "answer": "赤"
     },
-    {
-        "question": "日本の国旗の色は？",
-        "choices": ["赤と白", "青と白", "緑と白", "黄色と白"],
-        "answer": "赤と白"
-    },
-    {
-        "question": "1週間は何日？",
-        "choices": ["6日", "7日", "8日", "9日"],
-        "answer": "7日"
-    },
-    {
-        "question": "英語で『猫』は？",
-        "choices": ["Dog", "Cat", "Bird", "Fish"],
-        "answer": "Cat"
-    },
-    {
-        "question": "5 + 5 = ?",
-        "choices": ["8", "9", "10", "11"],
-        "answer": "10"
-    },
-    {
-        "question": "日本の国花は？",
-        "choices": ["桜", "バラ", "ひまわり", "チューリップ"],
-        "answer": "桜"
-    },
-    {
-        "question": "富士山がある県は？",
-        "choices": ["静岡県", "北海道", "沖縄県", "青森県"],
-        "answer": "静岡県"
-    },
-    {
-        "question": "1ダースは何個？",
-        "choices": ["10個", "12個", "15個", "20個"],
-        "answer": "12個"
-    },
-    {
-        "question": "英語で『青』は？",
-        "choices": ["Red", "Blue", "Green", "Yellow"],
-        "answer": "Blue"
-    },
-    {
-        "question": "10 - 3 = ?",
-        "choices": ["6", "7", "8", "9"],
-        "answer": "7"
-    },
-    {
-        "question": "日本の国技は？",
-        "choices": ["相撲", "柔道", "剣道", "空手"],
-        "answer": "相撲"
-    },
-    {
-        "question": "1年で一番暑い季節は？",
-        "choices": ["春", "夏", "秋", "冬"],
-        "answer": "夏"
-    },
-    {
-        "question": "英語で『ありがとう』は？",
-        "choices": ["Sorry", "Please", "Thank you", "Hello"],
-        "answer": "Thank you"
-    },
-    {
-        "question": "2 × 6 = ?",
-        "choices": ["10", "11", "12", "13"],
-        "answer": "12"
-    },
-    {
-        "question": "バナナの色は？",
-        "choices": ["黄色", "赤", "青", "紫"],
-        "answer": "黄色"
-    },
-    {
-        "question": "日本の通貨単位は？",
-        "choices": ["円", "ドル", "ユーロ", "ウォン"],
-        "answer": "円"
-    },
-    {
-        "question": "1時間は何分？",
-        "choices": ["50分", "60分", "70分", "80分"],
-        "answer": "60分"
-    },
-    {
-        "question": "英語で『学校』は？",
-        "choices": ["House", "School", "Park", "Store"],
-        "answer": "School"
-    },
-    {
-        "question": "9 + 8 = ?",
-        "choices": ["15", "16", "17", "18"],
-        "answer": "17"
-    },
-    {
-        "question": "海の水はどんな味？",
-        "choices": ["甘い", "しょっぱい", "苦い", "酸っぱい"],
-        "answer": "しょっぱい"
-    },
-    {
-        "question": "日本で一番高い山は？",
-        "choices": ["富士山", "浅間山", "槍ヶ岳", "白山"],
-        "answer": "富士山"
-    },
 ]
 
 QUESTIONS_INTERMEDIATE = [
@@ -169,106 +69,6 @@ QUESTIONS_INTERMEDIATE = [
         "question": "英語で『速い』は？",
         "choices": ["Slow", "Fast", "Quiet", "Heavy"],
         "answer": "Fast"
-    },
-    {
-        "question": "12 × 12 = ?",
-        "choices": ["122", "132", "144", "154"],
-        "answer": "144"
-    },
-    {
-        "question": "日本国憲法が施行されたのは何年？",
-        "choices": ["1945年", "1946年", "1947年", "1950年"],
-        "answer": "1947年"
-    },
-    {
-        "question": "英語で『重要な』は？",
-        "choices": ["Important", "Interesting", "Impossible", "Immediate"],
-        "answer": "Important"
-    },
-    {
-        "question": "三角形の内角の和は？",
-        "choices": ["90度", "180度", "270度", "360度"],
-        "answer": "180度"
-    },
-    {
-        "question": "光の速さは秒速約何km？",
-        "choices": ["3万km", "30万km", "300万km", "3000万km"],
-        "answer": "30万km"
-    },
-    {
-        "question": "日本で一番長い川は？",
-        "choices": ["信濃川", "利根川", "石狩川", "淀川"],
-        "answer": "信濃川"
-    },
-    {
-        "question": "7の倍数はどれ？",
-        "choices": ["21", "22", "23", "24"],
-        "answer": "21"
-    },
-    {
-        "question": "英語で『決定する』は？",
-        "choices": ["Decide", "Design", "Desire", "Deny"],
-        "answer": "Decide"
-    },
-    {
-        "question": "平方根の記号は？",
-        "choices": ["√", "∑", "∫", "π"],
-        "answer": "√"
-    },
-    {
-        "question": "江戸幕府を開いたのは？",
-        "choices": ["徳川家康", "織田信長", "豊臣秀吉", "源頼朝"],
-        "answer": "徳川家康"
-    },
-    {
-        "question": "200 ÷ 5 = ?",
-        "choices": ["30", "35", "40", "45"],
-        "answer": "40"
-    },
-    {
-        "question": "英語で『経済』は？",
-        "choices": ["Economy", "Ecology", "Energy", "Equity"],
-        "answer": "Economy"
-    },
-    {
-        "question": "DNAの二重らせん構造を発見したのは？",
-        "choices": ["ワトソンとクリック", "アインシュタイン", "ダーウィン", "メンデル"],
-        "answer": "ワトソンとクリック"
-    },
-    {
-        "question": "日本の内閣総理大臣を選ぶのは？",
-        "choices": ["国会", "天皇", "最高裁判所", "国民投票"],
-        "answer": "国会"
-    },
-    {
-        "question": "15%の割引で1000円の商品はいくら？",
-        "choices": ["750円", "800円", "850円", "900円"],
-        "answer": "850円"
-    },
-    {
-        "question": "英語で『環境』は？",
-        "choices": ["Environment", "Equipment", "Enrollment", "Experiment"],
-        "answer": "Environment"
-    },
-    {
-        "question": "世界で一番大きい大陸は？",
-        "choices": ["アジア", "アフリカ", "北アメリカ", "ヨーロッパ"],
-        "answer": "アジア"
-    },
-    {
-        "question": "二進法で10は10進法でいくつ？",
-        "choices": ["1", "2", "3", "4"],
-        "answer": "2"
-    },
-    {
-        "question": "日本の三権分立の三権は？",
-        "choices": ["立法・行政・司法", "経済・政治・文化", "教育・医療・農業", "内閣・国会・裁判所"],
-        "answer": "立法・行政・司法"
-    },
-    {
-        "question": "英語で『比較する』は？",
-        "choices": ["Compare", "Compete", "Complete", "Compose"],
-        "answer": "Compare"
     },
 ]
 
@@ -298,112 +98,12 @@ QUESTIONS_ADVANCED = [
         "choices": ["πr", "2πr", "πr²", "πd"],
         "answer": "πr²"
     },
-    {
-        "question": "微分方程式 dy/dx = y の一般解は？",
-        "choices": ["y=Ce^x", "y=Cx", "y=Csin(x)", "y=C/x"],
-        "answer": "y=Ce^x"
-    },
-    {
-        "question": "相対性理論を提唱したのは？",
-        "choices": ["アインシュタイン", "ニュートン", "ボーア", "ハイゼンベルク"],
-        "answer": "アインシュタイン"
-    },
-    {
-        "question": "英語で『にもかかわらず』は？",
-        "choices": ["Nevertheless", "Furthermore", "Therefore", "Meanwhile"],
-        "answer": "Nevertheless"
-    },
-    {
-        "question": "明治時代に制定された憲法は？",
-        "choices": ["大日本帝国憲法", "日本国憲法", "五箇条の御誓文", "教育勅語"],
-        "answer": "大日本帝国憲法"
-    },
-    {
-        "question": "log₁₀100 = ?",
-        "choices": ["1", "2", "3", "10"],
-        "answer": "2"
-    },
-    {
-        "question": "DNAを構成する塩基は何種類？",
-        "choices": ["2種類", "3種類", "4種類", "5種類"],
-        "answer": "4種類"
-    },
-    {
-        "question": "世界恐慌が始まったのは何年？",
-        "choices": ["1919年", "1929年", "1939年", "1949年"],
-        "answer": "1929年"
-    },
-    {
-        "question": "英語で『必然的な』は？",
-        "choices": ["Inevitable", "Invisible", "Incredible", "Indefinite"],
-        "answer": "Inevitable"
-    },
-    {
-        "question": "二次関数 y=x²-4x+3 の頂点の座標は？",
-        "choices": ["(2,-1)", "(1,-1)", "(2,1)", "(-2,-1)"],
-        "answer": "(2,-1)"
-    },
-    {
-        "question": "産業革命が起こった国は？",
-        "choices": ["イギリス", "フランス", "ドイツ", "アメリカ"],
-        "answer": "イギリス"
-    },
-    {
-        "question": "化学式C6H12O6が表す物質は？",
-        "choices": ["グルコース", "エタノール", "酢酸", "メタン"],
-        "answer": "グルコース"
-    },
-    {
-        "question": "英語で『持続可能な』は？",
-        "choices": ["Sustainable", "Suspicious", "Substantial", "Subsequent"],
-        "answer": "Sustainable"
-    },
-    {
-        "question": "三権分立を提唱した思想家は？",
-        "choices": ["モンテスキュー", "ルソー", "ロック", "ヴォルテール"],
-        "answer": "モンテスキュー"
-    },
-    {
-        "question": "積分∫x dx の答えは？",
-        "choices": ["x²/2 + C", "x²+C", "2x+C", "x+C"],
-        "answer": "x²/2 + C"
-    },
-    {
-        "question": "冷戦の対立構造は？",
-        "choices": ["アメリカとソ連", "日本と中国", "イギリスとフランス", "ドイツとイタリア"],
-        "answer": "アメリカとソ連"
-    },
-    {
-        "question": "英語で『矛盾』は？",
-        "choices": ["Contradiction", "Contribution", "Construction", "Continuation"],
-        "answer": "Contradiction"
-    },
-    {
-        "question": "オームの法則の式は？",
-        "choices": ["V=IR", "V=I/R", "V=I+R", "V=IR²"],
-        "answer": "V=IR"
-    },
-    {
-        "question": "平安時代に書かれた作品は？",
-        "choices": ["源氏物語", "万葉集", "古事記", "日本書紀"],
-        "answer": "源氏物語"
-    },
-    {
-        "question": "英語で『独立した』は？",
-        "choices": ["Independent", "Interdependent", "Indifferent", "Intelligent"],
-        "answer": "Independent"
-    },
-    {
-        "question": "三角関数でsin30°の値は？",
-        "choices": ["1/2", "√2/2", "√3/2", "1"],
-        "answer": "1/2"
-    },
 ]
 
 MODE_QUESTIONS = {
-    "かんたん": QUESTIONS_BEGINNER,
-    "ふつう": QUESTIONS_INTERMEDIATE,
-    "むずかしい": QUESTIONS_ADVANCED,
+    "初級モード": QUESTIONS_BEGINNER,
+    "中級モード": QUESTIONS_INTERMEDIATE,
+    "高級モード": QUESTIONS_ADVANCED,
 }
 
 # -------------------------
@@ -473,102 +173,79 @@ if "radio_id" not in st.session_state:
     st.session_state.radio_id = 0
 
 if "mode" not in st.session_state:
-    st.session_state.mode = "かんたん"
+    st.session_state.mode = "初級モード"
 
 if "selected_mode" not in st.session_state:
-    st.session_state.selected_mode = "かんたん"
-
-if "remaining_questions" not in st.session_state:
-    st.session_state.remaining_questions = []
-
-# -------------------------
-# 問題を1問取り出す（出題済みは山が尽きるまで出さない）
-# -------------------------
-def draw_question(mode_name):
-    if not st.session_state.remaining_questions:
-        pool = MODE_QUESTIONS[mode_name][:]
-        random.shuffle(pool)
-        # 周をまたいだ直後に、直前に出した問題がまた選ばれないようにする
-        last_q = st.session_state.get("last_question")
-        if last_q is not None and len(pool) > 1 and pool[-1] is last_q:
-            pool[-1], pool[0] = pool[0], pool[-1]
-        st.session_state.remaining_questions = pool
-    q = st.session_state.remaining_questions.pop()
-    st.session_state.last_question = q
-    return q
+    st.session_state.selected_mode = "初級モード"
 
 # -------------------------
 # スタート前画面
 # -------------------------
 if not st.session_state.started:
 
-    st.title("高速学習アプリ")
+    st.title("🍣 高速学習アプリ")
 
     st.markdown("### モードを選んでね")
 
     # 各モードボタンの塗りつぶし色・文字色・選択中の枠線を動的に生成
     mode_colors = {
-        "かんたん": "#2ecc71",   # 緑
-        "ふつう": "#f1c40f",   # 黄
-        "むずかしい": "#e74c3c",   # 赤
+        "初級モード": "#2ecc71",   # 緑
+        "中級モード": "#f1c40f",   # 黄
+        "高級モード": "#e74c3c",   # 赤
     }
     mode_text_colors = {
-        "かんたん": "#ffffff",
-        "ふつう": "#3d3400",
-        "むずかしい": "#ffffff",
+        "初級モード": "#ffffff",
+        "中級モード": "#3d3400",
+        "高級モード": "#ffffff",
     }
     mode_keys = {
-        "かんたん": "mode_container_beginner",
-        "ふつう": "mode_container_intermediate",
-        "むずかしい": "mode_container_advanced",
+        "初級モード": "mode_container_beginner",
+        "中級モード": "mode_container_intermediate",
+        "高級モード": "mode_container_advanced",
+    }
+    mode_emojis = {
+        "初級モード": "🟢",
+        "中級モード": "🟡",
+        "高級モード": "🔴",
     }
 
     button_css = "<style>"
     for m_name, m_key in mode_keys.items():
         button_css += f"""
         .st-key-{m_key} {{
-            background-color: {mode_colors[m_name]} !important;
-            border-radius: 20px !important;
-            padding: 24px !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: stretch !important;
-            min-height: 400px !important;
-            justify-content: center !important;
-        }}
-        .st-key-{m_key} div[data-testid="stButton"] {{
-            display: flex !important;
+            background-color: {mode_colors[m_name]};
+            border-radius: 20px;
+            padding: 32px 16px 36px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            min-height: 320px;
+            justify-content: center;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button {{
-            width: 100% !important;
-            height: 260px !important;
-            background-color: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            font-size: 3.8rem !important;
-            font-weight: 900 !important;
-            letter-spacing: 0.05em !important;
-            color: {mode_text_colors[m_name]} !important;
-            white-space: normal !important;
-            word-break: break-word !important;
-            padding: 16px !important;
-            line-height: 1.3 !important;
-        }}
-        .st-key-{m_key} div[data-testid="stButton"] button p {{
-            font-size: 3.8rem !important;
-            font-weight: 900 !important;
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: {mode_text_colors[m_name]};
+            white-space: normal;
+            word-break: break-word;
+            padding: 24px 8px;
+            line-height: 1.3;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button:hover {{
-            background-color: rgba(255, 255, 255, 0.15) !important;
-            color: {mode_text_colors[m_name]} !important;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: {mode_text_colors[m_name]};
         }}
         .st-key-{m_key} .mode-info {{
-            font-size: 1.4rem !important;
-            font-weight: 500 !important;
-            color: {mode_text_colors[m_name]} !important;
-            text-align: center !important;
-            line-height: 1.6 !important;
-            margin-top: 16px !important;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: {mode_text_colors[m_name]};
+            text-align: center;
+            line-height: 1.6;
+            margin-top: 12px;
         }}
         """
     button_css += "</style>"
@@ -578,25 +255,21 @@ if not st.session_state.started:
         st.session_state.mode = mode_name
         st.session_state.game_limit = MODE_SETTINGS[mode_name]["game_limit"]
         st.session_state.question_limit = MODE_SETTINGS[mode_name]["question_limit"]
-        # 出題プールをシャッフルして作り直す（＝出題済みは尽きるまで出さない）
-        pool = MODE_QUESTIONS[mode_name][:]
-        random.shuffle(pool)
-        st.session_state.remaining_questions = pool
-        st.session_state.question = draw_question(mode_name)
+        st.session_state.question = random.choice(MODE_QUESTIONS[mode_name])
         st.session_state.started = True
         st.session_state.game_start = time.time()
         st.session_state.question_start = time.time()
         st.rerun()
 
     btn_col1, btn_col2, btn_col3 = st.columns(3)
-    btn_cols = {"かんたん": btn_col1, "ふつう": btn_col2, "むずかしい": btn_col3}
+    btn_cols = {"初級モード": btn_col1, "中級モード": btn_col2, "高級モード": btn_col3}
 
     for m_name, m_key in mode_keys.items():
         with btn_cols[m_name]:
             with st.container(key=m_key):
                 settings = MODE_SETTINGS[m_name]
                 if st.button(
-                    m_name,
+                    f"{mode_emojis[m_name]} {m_name}",
                     key=f"{m_key}_btn",
                     use_container_width=True,
                 ):
@@ -638,7 +311,7 @@ question_pct = int((question_remaining / question_limit) * 100)
 # 次の問題
 # -------------------------
 def next_question():
-    st.session_state.question = draw_question(st.session_state.mode)
+    st.session_state.question = random.choice(current_questions)
     st.session_state.question_start = time.time()
     st.session_state.radio_id += 1
     st.rerun()
@@ -726,44 +399,17 @@ answer = st.radio(
     key=f"radio_{st.session_state.radio_id}"
 )
 
-st.markdown(
-    """
-    <style>
-    .st-key-answer_btn_container div[data-testid="stButton"] button {
-        width: 100% !important;
-        height: 90px !important;
-        font-size: 2rem !important;
-        font-weight: 800 !important;
-        border-radius: 14px !important;
-        background-color: #ff4b4b !important;
-        color: #ffffff !important;
-        border: none !important;
-    }
-    .st-key-answer_btn_container div[data-testid="stButton"] button p {
-        font-size: 2rem !important;
-        font-weight: 800 !important;
-    }
-    .st-key-answer_btn_container div[data-testid="stButton"] button:hover {
-        background-color: #ff6b6b !important;
-        color: #ffffff !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+if st.button("回答", use_container_width=True):
 
-with st.container(key="answer_btn_container"):
-    if st.button("回答", use_container_width=True):
+    if answer == q["answer"]:
+        st.session_state.score += 1
+        st.success("正解！")
+    else:
+        st.session_state.wrong += 1
+        st.error(f"不正解！（正解：{q['answer']}）")
 
-        if answer == q["answer"]:
-            st.session_state.score += 1
-            st.success("正解！")
-        else:
-            st.session_state.wrong += 1
-            st.error(f"不正解！（正解：{q['answer']}）")
-
-        time.sleep(0.5)
-        next_question()
+    time.sleep(0.5)
+    next_question()
 
 # -------------------------
 # 自動更新
