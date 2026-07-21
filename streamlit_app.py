@@ -219,7 +219,7 @@ if not st.session_state.started:
             display: flex;
             flex-direction: column;
             align-items: stretch;
-            min-height: 260px;
+            min-height: 320px;
             justify-content: center;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button {{
@@ -227,12 +227,12 @@ if not st.session_state.started:
             background-color: transparent;
             border: none;
             box-shadow: none;
-            font-size: 33rem;
+            font-size: 3rem;
             font-weight: 900;
             color: {mode_text_colors[m_name]};
             white-space: normal;
             word-break: break-word;
-            padding: 8px 0;
+            padding: 24px 8px;
             line-height: 1.3;
         }}
         .st-key-{m_key} div[data-testid="stButton"] button:hover {{
@@ -240,12 +240,12 @@ if not st.session_state.started:
             color: {mode_text_colors[m_name]};
         }}
         .st-key-{m_key} .mode-info {{
-            font-size: 1.15rem;
-            font-weight: 400;
+            font-size: 1.4rem;
+            font-weight: 700;
             color: {mode_text_colors[m_name]};
             text-align: center;
-            line-height: 1.5;
-            margin-top: 8px;
+            line-height: 1.6;
+            margin-top: 12px;
         }}
         """
     button_css += "</style>"
