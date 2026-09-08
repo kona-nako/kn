@@ -35,6 +35,11 @@ DIFFICULTY_SETTINGS = {
 
 AI_FIND_PROB = {"かんたん": 0.30, "ふつう": 0.60, "むずかしい": 0.95}
 
+# 対戦モード（AI対戦・オンライン対戦）だけに適用する制限時間。
+# 練習であるソロモードには時間制限を設けない。
+# 難易度が上がるほど探すべき四字熟語の数が増えるため、時間も長くする。
+TIME_LIMIT_SECONDS = {"かんたん": 60, "ふつう": 90, "むずかしい": 120}
+
 
 def is_valid_idiom(chars):
     """4文字がちょうど辞書に載っている四字熟語になっているかを判定する"""
@@ -89,11 +94,12 @@ def tier_message(found_count, max_count):
 # ============================================================
 # 共通UIパーツ：手札から四字熟語を探すUI
 # ============================================================
-def render_board(hand, prefix, confirm_label="✅ 四字熟語として確定する"):
+def render_board(hand, prefix, confirm_label="✅ 四字熟語として確定する", time_limit_seconds=None):
     status_key = f"{prefix}_status"
     order_key = f"{prefix}_order"
     found_key = f"{prefix}_found"
     fail_key = f"{prefix}_fail"
+    deadline_key = f"{prefix}_deadline"
 
     if status_key not in st.session_state:
         st.session_state[status_key] = [AVAILABLE] * len(hand)
@@ -101,9 +107,25 @@ def render_board(hand, prefix, confirm_label="✅ 四字熟語として確定す
         st.session_state[found_key] = []
         st.session_state[fail_key] = None
 
+    if time_limit_seconds is not None and deadline_key not in st.session_state:
+        st.session_state[deadline_key] = time.time() + time_limit_seconds
+
     status = st.session_state[status_key]
     order = st.session_state[order_key]
     found = st.session_state[found_key]
+
+    # ---- 制限時間の表示（対戦モードのみ）----
+    timed_out = False
+    if time_limit_seconds is not None:
+        remaining = st.session_state[deadline_key] - time.time()
+        if remaining <= 0:
+            remaining = 0
+            timed_out = True
+        mm, ss = divmod(int(remaining), 60)
+        st.progress(min(1.0, max(0.0, remaining / time_limit_seconds)))
+        st.write(f"⏳ 残り時間：{mm:02d}:{ss:02d}")
+        if timed_out:
+            st.error("⏰ 時間切れです！ここまでの結果で確定します。")
 
     st.write(f"**見つけた四字熟語：{len(found)}個**")
     if found:
@@ -116,12 +138,12 @@ def render_board(hand, prefix, confirm_label="✅ 四字熟語として確定す
         if status[i] == USED:
             col.button(ch, key=f"{prefix}_btn_{i}", disabled=True)
         elif status[i] == SELECTED:
-            if col.button(f"【{ch}】", key=f"{prefix}_btn_{i}"):
+            if col.button(f"【{ch}】", key=f"{prefix}_btn_{i}", disabled=timed_out):
                 order.remove(i)
                 status[i] = AVAILABLE
                 st.session_state[fail_key] = None
         else:
-            if col.button(ch, key=f"{prefix}_btn_{i}"):
+            if col.button(ch, key=f"{prefix}_btn_{i}", disabled=timed_out):
                 order.append(i)
                 status[i] = SELECTED
                 st.session_state[fail_key] = None
@@ -132,7 +154,7 @@ def render_board(hand, prefix, confirm_label="✅ 四字熟語として確定す
 
     c1, c2, c3 = st.columns(3)
     can_confirm = len(order) == 4
-    if c1.button(confirm_label, key=f"{prefix}_confirm", disabled=not can_confirm):
+    if c1.button(confirm_label, key=f"{prefix}_confirm", disabled=(not can_confirm or timed_out)):
         if is_valid_idiom([hand[i] for i in order]):
             found.append(selected_word)
             for i in order:
@@ -143,13 +165,13 @@ def render_board(hand, prefix, confirm_label="✅ 四字熟語として確定す
         else:
             st.session_state[fail_key] = selected_word
 
-    if c2.button("⬅️ 1文字戻す", key=f"{prefix}_undo"):
+    if c2.button("⬅️ 1文字戻す", key=f"{prefix}_undo", disabled=timed_out):
         if order:
             last = order.pop()
             status[last] = AVAILABLE
             st.session_state[fail_key] = None
 
-    if c3.button("🔄 選択をリセット", key=f"{prefix}_clear"):
+    if c3.button("🔄 選択をリセット", key=f"{prefix}_clear", disabled=timed_out):
         for i in order:
             status[i] = AVAILABLE
         order.clear()
@@ -158,16 +180,24 @@ def render_board(hand, prefix, confirm_label="✅ 四字熟語として確定す
     if st.session_state.get(fail_key):
         st.warning(f"「{st.session_state[fail_key]}」は四字熟語として認識されませんでした。")
 
-    remaining = sum(1 for s in status if s == AVAILABLE)
-    st.caption(f"残り未使用の漢字：{remaining}枚")
+    remaining_tiles = sum(1 for s in status if s == AVAILABLE)
+    st.caption(f"残り未使用の漢字：{remaining_tiles}枚")
 
-    finish_clicked = st.button("🏁 ここで終了する（お手上げ）", key=f"{prefix}_finish")
-    no_more_moves = remaining < 4 and len(order) < 4
-    return found, (finish_clicked or no_more_moves)
+    finish_clicked = st.button("🏁 ここで終了する（お手上げ）", key=f"{prefix}_finish", disabled=timed_out)
+    no_more_moves = remaining_tiles < 4 and len(order) < 4
+    finished = finish_clicked or no_more_moves or timed_out
+
+    # 制限時間中はカウントダウンのために1秒ごとに自動更新する
+    if time_limit_seconds is not None and not finished:
+        time.sleep(1)
+        st.rerun()
+
+    return found, finished
 
 
 def clear_board_state(prefix):
-    for key in [f"{prefix}_status", f"{prefix}_order", f"{prefix}_found", f"{prefix}_fail"]:
+    for key in [f"{prefix}_status", f"{prefix}_order", f"{prefix}_found", f"{prefix}_fail",
+                f"{prefix}_deadline"]:
         st.session_state.pop(key, None)
 
 
@@ -247,7 +277,11 @@ def run_solo():
         max_count = len(st.session_state.solo_targets)
         st.write(f"見つけた四字熟語：{len(found)}個 / 正解{max_count}個中")
         st.write(tier_message(len(found), max_count))
-        st.caption("正解だった四字熟語：" + "　".join(st.session_state.solo_targets))
+        missed = [t for t in st.session_state.solo_targets if t not in found]
+        if missed:
+            st.warning("見つけられなかったのはこの四字熟語！　" + "　".join(missed))
+        else:
+            st.success("すべての四字熟語を見つけました！")
 
     st.divider()
     st.radio("次のカードの難易度", list(DIFFICULTY_SETTINGS.keys()),
@@ -292,9 +326,13 @@ def run_ai():
         _, opp_targets = generate_hand(difficulty)
         st.session_state.ai_opponent_targets = opp_targets
 
+    time_limit = TIME_LIMIT_SECONDS[st.session_state.ai_difficulty]
+    st.caption(f"⏱️ 制限時間：{time_limit}秒（難易度が上がるほど長くなります）")
+
     found, finished = render_board(
         st.session_state.ai_hand, "aibattle",
         confirm_label="✅ 四字熟語として確定して勝負する",
+        time_limit_seconds=time_limit,
     )
 
     if finished and "ai_result" not in st.session_state:
@@ -303,6 +341,9 @@ def run_ai():
 
     if "ai_result" in st.session_state:
         player_found, ai_found = st.session_state.ai_result
+        player_missed = [t for t in st.session_state.ai_targets if t not in player_found]
+        ai_missed = [t for t in st.session_state.ai_opponent_targets if t not in ai_found]
+
         st.divider()
         st.subheader("🏁 結果")
         c1, c2 = st.columns(2)
@@ -310,10 +351,16 @@ def run_ai():
             st.write("**あなた**")
             st.write("　".join(player_found) if player_found else "（なし）")
             st.metric("見つけた数", len(player_found))
+            if player_missed:
+                st.warning("見つけられなかったのはこの四字熟語！　" + "　".join(player_missed))
+            else:
+                st.success("すべて見つけました！")
         with c2:
             st.write(f"**🤖 AI（{st.session_state.ai_difficulty}）**")
             st.write("　".join(ai_found) if ai_found else "（なし）")
             st.metric("見つけた数", len(ai_found))
+            if ai_missed:
+                st.caption("AIが見つけられなかった四字熟語：" + "　".join(ai_missed))
 
         if len(player_found) > len(ai_found):
             st.balloons()
@@ -392,14 +439,16 @@ def run_online():
                                    horizontal=True, key="online_host_diff")
             if st.button("🆕 部屋を作成する", key="online_create"):
                 code = new_room_code()
-                hand1, _ = generate_hand(difficulty)
-                hand2, _ = generate_hand(difficulty)
+                hand1, targets1 = generate_hand(difficulty)
+                hand2, targets2 = generate_hand(difficulty)
                 rooms = load_rooms()
                 rooms[code] = {
                     "name1": host_name, "name2": None,
                     "hand1": hand1, "hand2": hand2,
+                    "targets1": targets1, "targets2": targets2,
                     "found1": None, "found2": None,
                     "ready1": False, "ready2": False,
+                    "difficulty": difficulty,
                     "created_at": time.time(),
                 }
                 save_rooms(rooms)
@@ -452,11 +501,14 @@ def run_online():
 
     ready_key = "ready1" if role == "host" else "ready2"
     found_key_room = "found1" if role == "host" else "found2"
+    time_limit = TIME_LIMIT_SECONDS[room.get("difficulty", "ふつう")]
 
     if not room[ready_key]:
+        st.caption(f"⏱️ 制限時間：{time_limit}秒（難易度が上がるほど長くなります）")
         found, finished = render_board(
             st.session_state.online_hand, "online",
             confirm_label="✅ 四字熟語として確定して提出する",
+            time_limit_seconds=time_limit,
         )
         if finished:
             fresh_rooms = load_rooms()
@@ -478,16 +530,26 @@ def run_online():
         st.subheader("🏁 結果")
         f1, f2 = room["found1"], room["found2"]
         s1, s2 = len(f1), len(f2)
+        missed1 = [t for t in room.get("targets1", []) if t not in f1]
+        missed2 = [t for t in room.get("targets2", []) if t not in f2]
 
         c1, c2 = st.columns(2)
         with c1:
             st.write(f"**{room['name1']}**")
             st.write("　".join(f1) if f1 else "（なし）")
             st.metric("見つけた数", s1)
+            if missed1:
+                st.warning("見つけられなかったのはこの四字熟語！　" + "　".join(missed1))
+            else:
+                st.success("すべて見つけました！")
         with c2:
             st.write(f"**{room['name2']}**")
             st.write("　".join(f2) if f2 else "（なし）")
             st.metric("見つけた数", s2)
+            if missed2:
+                st.warning("見つけられなかったのはこの四字熟語！　" + "　".join(missed2))
+            else:
+                st.success("すべて見つけました！")
 
         if s1 > s2:
             st.success(f"🎉 {room['name1']} の勝ち！")
