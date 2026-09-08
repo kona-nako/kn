@@ -1,8 +1,4 @@
-import json
-import os
 import random
-import string
-import threading
 import time
 
 import streamlit as st
@@ -229,15 +225,12 @@ def run_menu():
     show_idiom_legend()
 
     st.divider()
-    c1, c2, c3 = st.columns(3)
+    c1, c2 = st.columns(2)
     if c1.button("🧑‍🎓 ソロモード\n(練習)", use_container_width=True):
         st.session_state.app_mode = "solo"
         st.rerun()
     if c2.button("🤖 AI対戦モード", use_container_width=True):
         st.session_state.app_mode = "ai"
-        st.rerun()
-    if c3.button("🌐 オンライン対戦モード", use_container_width=True):
-        st.session_state.app_mode = "online"
         st.rerun()
 
     st.caption("💡 手札には必ず、選んだ難易度の個数ぶんの「正解の四字熟語」が隠れています。")
@@ -300,7 +293,8 @@ def run_solo():
 # AI対戦モード
 # ============================================================
 def reset_ai():
-    for key in ["ai_hand", "ai_targets", "ai_difficulty", "ai_opponent_targets", "ai_result"]:
+    for key in ["ai_stage", "ai_hand", "ai_targets", "ai_difficulty",
+                "ai_opponent_targets", "ai_result"]:
         st.session_state.pop(key, None)
     clear_board_state("aibattle")
 
@@ -310,14 +304,22 @@ def ai_play(difficulty, targets):
     return [idiom for idiom in targets if random.random() < prob]
 
 
-def run_ai():
+def run_ai_difficulty_select():
+    """AI対戦モードに入って最初に表示する、難易度選択の画面。"""
     st.header("🤖 AI対戦モード")
-    st.caption("AIも同じ仕組みの手札から四字熟語を探して勝負します。")
+    st.caption("まずは難易度を選んでください。難易度が上がるほど、探すべき四字熟語の数と"
+               "制限時間の両方が増えます。")
 
-    difficulty = st.radio("難易度（自分とAI共通）", list(DIFFICULTY_SETTINGS.keys()),
+    difficulty = st.radio("難易度", list(DIFFICULTY_SETTINGS.keys()),
                            horizontal=True, key="ai_diff_select")
+    cfg = DIFFICULTY_SETTINGS[difficulty]
+    st.write(f"・隠れている四字熟語：{cfg['idiom_count']}個　"
+             f"・ダミー漢字：{cfg['decoy_count']}枚　"
+             f"・制限時間：{TIME_LIMIT_SECONDS[difficulty]}秒")
 
-    if "ai_hand" not in st.session_state:
+    st.divider()
+    c1, c2 = st.columns(2)
+    if c1.button("▶️ この難易度で対戦を始める", key="ai_start", type="primary"):
         hand, targets = generate_hand(difficulty)
         st.session_state.ai_hand = hand
         st.session_state.ai_targets = targets
@@ -326,8 +328,19 @@ def run_ai():
         _, opp_targets = generate_hand(difficulty)
         st.session_state.ai_opponent_targets = opp_targets
 
+        st.session_state.ai_stage = "play"
+        st.rerun()
+    if c2.button("🏠 メニューに戻る", key="ai_menu_from_diff"):
+        reset_ai()
+        go_menu()
+        st.rerun()
+
+
+def run_ai_play():
+    st.header("🤖 AI対戦モード")
     time_limit = TIME_LIMIT_SECONDS[st.session_state.ai_difficulty]
-    st.caption(f"⏱️ 制限時間：{time_limit}秒（難易度が上がるほど長くなります）")
+    st.caption(f"難易度：{st.session_state.ai_difficulty}　"
+               f"⏱️ 制限時間：{time_limit}秒（難易度が上がるほど長くなります）")
 
     found, finished = render_board(
         st.session_state.ai_hand, "aibattle",
@@ -381,188 +394,12 @@ def run_ai():
         st.rerun()
 
 
-# ============================================================
-# オンライン対戦モード（同じサーバーに接続している人同士）
-# ============================================================
-ROOM_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "idiom_battle_rooms.json")
-_ROOM_LOCK = threading.Lock()
-
-
-def load_rooms():
-    with _ROOM_LOCK:
-        if not os.path.exists(ROOM_FILE):
-            return {}
-        try:
-            with open(ROOM_FILE, "r", encoding="utf-8") as f:
-                rooms = json.load(f)
-        except Exception:
-            return {}
-        now = time.time()
-        cleaned = {k: v for k, v in rooms.items() if now - v.get("created_at", now) < 3 * 3600}
-        if len(cleaned) != len(rooms):
-            with open(ROOM_FILE, "w", encoding="utf-8") as f:
-                json.dump(cleaned, f, ensure_ascii=False)
-        return cleaned
-
-
-def save_rooms(rooms):
-    with _ROOM_LOCK:
-        with open(ROOM_FILE, "w", encoding="utf-8") as f:
-            json.dump(rooms, f, ensure_ascii=False)
-
-
-def new_room_code():
-    return "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
-
-
-def reset_online():
-    for key in ["online_stage", "online_role", "online_code", "online_hand"]:
-        st.session_state.pop(key, None)
-    clear_board_state("online")
-
-
-def run_online():
-    st.header("🌐 オンライン対戦モード")
-    st.warning("⚠️ このモードは「同じサーバー（同じPCで開いた別タブ、同じWi-Fi内、"
-               "同じ場所にデプロイされたアプリ）」に接続している人同士でのみ対戦できます。"
-               "全く離れた場所の相手とインターネット越しにマッチングする機能は、"
-               "別途の会員サーバーが必要になるため今回は非対応です（その場合はAI対戦モードをお使いください）。")
-
-    stage = st.session_state.get("online_stage", "menu")
-
-    if stage == "menu":
-        c1, c2 = st.columns(2)
-        with c1:
-            st.subheader("部屋を作る")
-            host_name = st.text_input("あなたの名前", value="ホスト", key="online_host_name")
-            difficulty = st.radio("難易度", list(DIFFICULTY_SETTINGS.keys()),
-                                   horizontal=True, key="online_host_diff")
-            if st.button("🆕 部屋を作成する", key="online_create"):
-                code = new_room_code()
-                hand1, targets1 = generate_hand(difficulty)
-                hand2, targets2 = generate_hand(difficulty)
-                rooms = load_rooms()
-                rooms[code] = {
-                    "name1": host_name, "name2": None,
-                    "hand1": hand1, "hand2": hand2,
-                    "targets1": targets1, "targets2": targets2,
-                    "found1": None, "found2": None,
-                    "ready1": False, "ready2": False,
-                    "difficulty": difficulty,
-                    "created_at": time.time(),
-                }
-                save_rooms(rooms)
-                st.session_state.online_stage = "room"
-                st.session_state.online_role = "host"
-                st.session_state.online_code = code
-                st.session_state.online_hand = hand1
-                st.rerun()
-        with c2:
-            st.subheader("部屋に入る")
-            guest_name = st.text_input("あなたの名前", value="ゲスト", key="online_guest_name")
-            code_in = st.text_input("部屋コード(4文字)", key="online_code_input").upper().strip()
-            if st.button("🚪 参加する", key="online_join"):
-                rooms = load_rooms()
-                if code_in not in rooms:
-                    st.error("その部屋コードは見つかりませんでした。")
-                elif rooms[code_in]["name2"] is not None:
-                    st.error("この部屋はすでに満員です。")
-                else:
-                    rooms[code_in]["name2"] = guest_name
-                    save_rooms(rooms)
-                    st.session_state.online_stage = "room"
-                    st.session_state.online_role = "guest"
-                    st.session_state.online_code = code_in
-                    st.session_state.online_hand = rooms[code_in]["hand2"]
-                    st.rerun()
-
-        st.divider()
-        if st.button("🏠 メニューに戻る", key="online_tomenu_menu"):
-            go_menu()
-            st.rerun()
-        return
-
-    # ---- room stage ----
-    code = st.session_state.online_code
-    role = st.session_state.online_role
-    rooms = load_rooms()
-    room = rooms.get(code)
-
-    if room is None:
-        st.error("部屋が見つかりませんでした（時間切れで削除された可能性があります）。")
-        if st.button("メニューに戻る", key="online_gone"):
-            reset_online()
-            st.rerun()
-        return
-
-    st.info(f"部屋コード: **{code}**" + ("　この番号を相手に伝えてください。" if role == "host" else ""))
-    opp_name = room["name2"] if role == "host" else room["name1"]
-    st.write(f"対戦相手: {opp_name if opp_name else '（参加を待っています…）'}")
-
-    ready_key = "ready1" if role == "host" else "ready2"
-    found_key_room = "found1" if role == "host" else "found2"
-    time_limit = TIME_LIMIT_SECONDS[room.get("difficulty", "ふつう")]
-
-    if not room[ready_key]:
-        st.caption(f"⏱️ 制限時間：{time_limit}秒（難易度が上がるほど長くなります）")
-        found, finished = render_board(
-            st.session_state.online_hand, "online",
-            confirm_label="✅ 四字熟語として確定して提出する",
-            time_limit_seconds=time_limit,
-        )
-        if finished:
-            fresh_rooms = load_rooms()
-            fresh_room = fresh_rooms.get(code)
-            if fresh_room:
-                fresh_room[found_key_room] = list(found)
-                fresh_room[ready_key] = True
-                save_rooms(fresh_rooms)
-                st.rerun()
+def run_ai():
+    stage = st.session_state.get("ai_stage", "difficulty")
+    if stage == "difficulty":
+        run_ai_difficulty_select()
     else:
-        st.success("提出済みです。相手の提出を待っています…")
-        if st.button("🔄 相手の状況を確認する", key="online_check"):
-            st.rerun()
-
-    rooms = load_rooms()
-    room = rooms.get(code) or {}
-    if room.get("ready1") and room.get("ready2"):
-        st.divider()
-        st.subheader("🏁 結果")
-        f1, f2 = room["found1"], room["found2"]
-        s1, s2 = len(f1), len(f2)
-        missed1 = [t for t in room.get("targets1", []) if t not in f1]
-        missed2 = [t for t in room.get("targets2", []) if t not in f2]
-
-        c1, c2 = st.columns(2)
-        with c1:
-            st.write(f"**{room['name1']}**")
-            st.write("　".join(f1) if f1 else "（なし）")
-            st.metric("見つけた数", s1)
-            if missed1:
-                st.warning("見つけられなかったのはこの四字熟語！　" + "　".join(missed1))
-            else:
-                st.success("すべて見つけました！")
-        with c2:
-            st.write(f"**{room['name2']}**")
-            st.write("　".join(f2) if f2 else "（なし）")
-            st.metric("見つけた数", s2)
-            if missed2:
-                st.warning("見つけられなかったのはこの四字熟語！　" + "　".join(missed2))
-            else:
-                st.success("すべて見つけました！")
-
-        if s1 > s2:
-            st.success(f"🎉 {room['name1']} の勝ち！")
-        elif s2 > s1:
-            st.success(f"🎉 {room['name2']} の勝ち！")
-        else:
-            st.warning("引き分け！")
-
-    st.divider()
-    if st.button("🏠 退室してメニューに戻る", key="online_leave"):
-        reset_online()
-        go_menu()
-        st.rerun()
+        run_ai_play()
 
 
 # ============================================================
@@ -575,8 +412,6 @@ elif mode == "solo":
     run_solo()
 elif mode == "ai":
     run_ai()
-elif mode == "online":
-    run_online()
 else:
     st.session_state.app_mode = "menu"
     st.rerun()
