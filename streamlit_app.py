@@ -240,24 +240,42 @@ def run_menu():
 # ソロモード
 # ============================================================
 def reset_solo():
-    for key in ["solo_hand", "solo_targets", "solo_difficulty", "solo_done"]:
+    for key in ["solo_stage", "solo_hand", "solo_targets", "solo_difficulty", "solo_done"]:
         st.session_state.pop(key, None)
     clear_board_state("solo")
 
 
-def run_solo():
+def run_solo_difficulty_select():
+    """ソロモードに入って最初に表示する、難易度選択の画面。"""
     st.header("🧑‍🎓 ソロモード（練習）")
-    st.caption("一人で好きなだけ練習できるモードです。")
+    st.caption("一人で好きなだけ練習できるモードです。時間制限はありません。"
+               "まずは難易度を選んでください。")
 
-    if "solo_hand" not in st.session_state:
-        difficulty = st.session_state.get("solo_diff_select", "ふつう")
+    difficulty = st.radio("難易度", list(DIFFICULTY_SETTINGS.keys()),
+                           horizontal=True, key="solo_diff_select")
+    cfg = DIFFICULTY_SETTINGS[difficulty]
+    st.write(f"・隠れている四字熟語：{cfg['idiom_count']}個　"
+             f"・ダミー漢字：{cfg['decoy_count']}枚")
+
+    st.divider()
+    c1, c2 = st.columns(2)
+    if c1.button("▶️ この難易度で始める", key="solo_start", type="primary"):
         hand, targets = generate_hand(difficulty)
         st.session_state.solo_hand = hand
         st.session_state.solo_targets = targets
         st.session_state.solo_difficulty = difficulty
+        st.session_state.solo_stage = "play"
+        st.rerun()
+    if c2.button("🏠 メニューに戻る", key="solo_menu_from_diff"):
+        reset_solo()
+        go_menu()
+        st.rerun()
 
-    st.write(f"難易度：**{st.session_state.solo_difficulty}**"
-             f"（正解は{len(st.session_state.solo_targets)}個隠れています）")
+
+def run_solo_play():
+    st.header("🧑‍🎓 ソロモード（練習）")
+    st.caption(f"難易度：{st.session_state.solo_difficulty}"
+               f"（正解は{len(st.session_state.solo_targets)}個隠れています）")
 
     found, finished = render_board(st.session_state.solo_hand, "solo")
 
@@ -277,16 +295,22 @@ def run_solo():
             st.success("すべての四字熟語を見つけました！")
 
     st.divider()
-    st.radio("次のカードの難易度", list(DIFFICULTY_SETTINGS.keys()),
-             horizontal=True, key="solo_diff_select")
     c1, c2 = st.columns(2)
-    if c1.button("🎲 新しいカードを引く", key="solo_new"):
+    if c1.button("🎲 難易度を選び直す", key="solo_new"):
         reset_solo()
         st.rerun()
     if c2.button("🏠 メニューに戻る", key="solo_menu"):
         reset_solo()
         go_menu()
         st.rerun()
+
+
+def run_solo():
+    stage = st.session_state.get("solo_stage", "difficulty")
+    if stage == "difficulty":
+        run_solo_difficulty_select()
+    else:
+        run_solo_play()
 
 
 # ============================================================
@@ -339,18 +363,25 @@ def run_ai_difficulty_select():
 def run_ai_play():
     st.header("🤖 AI対戦モード")
     time_limit = TIME_LIMIT_SECONDS[st.session_state.ai_difficulty]
-    st.caption(f"難易度：{st.session_state.ai_difficulty}　"
-               f"⏱️ 制限時間：{time_limit}秒（難易度が上がるほど長くなります）")
 
-    found, finished = render_board(
-        st.session_state.ai_hand, "aibattle",
-        confirm_label="✅ 四字熟語として確定して勝負する",
-        time_limit_seconds=time_limit,
-    )
+    # ラウンドがまだ終わっていない間だけ、時間制限つきの盤面を描画する。
+    # （終わった後もこのブロックを描画し続けると、内部の自動更新タイマーが
+    #   　動き続けて「メニューに戻る」などのボタン操作が効かなくなるため）
+    if "ai_result" not in st.session_state:
+        st.caption(f"難易度：{st.session_state.ai_difficulty}　"
+                   f"⏱️ 制限時間：{time_limit}秒（難易度が上がるほど長くなります）")
 
-    if finished and "ai_result" not in st.session_state:
-        ai_found = ai_play(st.session_state.ai_difficulty, st.session_state.ai_opponent_targets)
-        st.session_state.ai_result = (list(found), ai_found)
+        found, finished = render_board(
+            st.session_state.ai_hand, "aibattle",
+            confirm_label="✅ 四字熟語として確定して勝負する",
+            time_limit_seconds=time_limit,
+        )
+
+        if finished:
+            # お手上げ・手詰まり・時間切れ、いずれの場合もここでタイマーを止めて確定する
+            ai_found = ai_play(st.session_state.ai_difficulty, st.session_state.ai_opponent_targets)
+            st.session_state.ai_result = (list(found), ai_found)
+            st.rerun()
 
     if "ai_result" in st.session_state:
         player_found, ai_found = st.session_state.ai_result
